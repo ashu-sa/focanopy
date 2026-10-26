@@ -13,15 +13,17 @@ import org.json.JSONObject
 class ComposeMvpTest {
     @get:Rule val compose=createAndroidComposeRule<MainActivity>()
     @Before fun clean() {
-        compose.runOnIdle {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
             check(compose.activity.packageName.endsWith(".qa"))
+            Repository.prefs.edit().putBoolean("showPet",false).putBoolean("animate",false).putBoolean("focusBlocking",false).apply()
             Repository.discard();Repository.selectMode(false);Repository.replace(emptyList())
+            compose.activity.startForegroundService(android.content.Intent(compose.activity,TimerService::class.java).setAction("SYNC"))
         }
-        compose.waitUntil(5000) {compose.onAllNodesWithContentDescription("Start or resume").fetchSemanticsNodes().isNotEmpty()}
+        compose.waitUntil(5000) {runCatching {compose.onAllNodesWithContentDescription("Start or resume").fetchSemanticsNodes().isNotEmpty()}.getOrDefault(false)}
     }
     private fun capture(name:String) {
-        compose.waitForIdle()
-        val bitmap=InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        Thread.sleep(250)
+        val bitmap=InstrumentationRegistry.getInstrumentation().getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES).takeScreenshot()
         java.io.File(compose.activity.filesDir,"compose-$name.png").outputStream().use {bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
     }
     @Test fun startPauseResumeSaveAndRename() {
@@ -94,4 +96,51 @@ class ComposeMvpTest {
         compose.onNodeWithContentDescription("Pause").performClick()
         compose.runOnIdle {Repository.discard()}
     }
+
+    @Test fun floatingCardPausesAndDragsWithoutStartingTimer() {
+        val automation=InstrumentationRegistry.getInstrumentation().getUiAutomation(android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES)
+        automation.executeShellCommand("appops set ${compose.activity.packageName} SYSTEM_ALERT_WINDOW allow").close()
+        Thread.sleep(400)
+        val info=automation.serviceInfo
+        info.flags=info.flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+        automation.serviceInfo=info
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            Repository.prefs.edit().putBoolean("showPet",true).putFloat("opacity",1f).putInt("petX",20).putInt("petY",150).apply()
+            Repository.start();Repository.engine.accumulated=28*60000L;Repository.engine.anchor=android.os.SystemClock.elapsedRealtime()
+            compose.activity.startForegroundService(android.content.Intent(compose.activity,TimerService::class.java).setAction("SHOW"))
+        }
+        fun find(node:android.view.accessibility.AccessibilityNodeInfo?,label:String):android.view.accessibility.AccessibilityNodeInfo? {
+            if(node==null)return null
+            if(node.contentDescription?.toString()==label)return node
+            for(i in 0 until node.childCount)find(node.getChild(i),label)?.let{return it}
+            return null
+        }
+        fun overlay()=automation.windows.mapNotNull{it.root}.firstOrNull{find(it,"Hide tree; stopwatch continues")!=null}
+        compose.waitUntil(6000){overlay()!=null}
+        capture("floating")
+        Assert.assertTrue(find(overlay(),"Pause")!!.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK))
+        compose.waitUntil(5000){Repository.engine.phase=="paused"}
+        val bounds=android.graphics.Rect();find(overlay(),"Start or resume")!!.getBoundsInScreen(bounds)
+        val before=Repository.prefs.getInt("petX",20)
+        val down=android.os.SystemClock.uptimeMillis()
+        for((action,delta) in listOf(android.view.MotionEvent.ACTION_DOWN to 0,android.view.MotionEvent.ACTION_MOVE to 55,android.view.MotionEvent.ACTION_UP to 55)) {
+            val event=android.view.MotionEvent.obtain(down,android.os.SystemClock.uptimeMillis(),action,bounds.centerX()+delta.toFloat(),bounds.centerY()+delta/2f,0)
+            automation.injectInputEvent(event,true);event.recycle();Thread.sleep(30)
+        }
+        Assert.assertEquals("paused",Repository.engine.phase)
+        Assert.assertNotEquals(before,Repository.prefs.getInt("petX",20))
+        find(overlay(),"Hide tree; stopwatch continues")!!.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {Repository.discard();Repository.prefs.edit().putBoolean("showPet",false).apply();compose.activity.startForegroundService(android.content.Intent(compose.activity,TimerService::class.java).setAction("SYNC"))}
+    }
+
+    @Test fun appBlockingControlsAreAvailableOutsidePomodoro() {
+        compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Pause distracting apps").performScrollTo().performClick()
+        if(BuildConfig.APP_BLOCKING_AVAILABLE) {
+            compose.onNodeWithText("Select social apps").assertIsDisplayed()
+            compose.onNodeWithText("Block during focus").assertIsDisplayed()
+        } else compose.onNodeWithText("App-blocking edition needed").assertIsDisplayed()
+        capture("blocking")
+    }
+
 }

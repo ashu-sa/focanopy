@@ -53,7 +53,7 @@ private fun sum(records:List<JSONObject>)=records.sumOf {it.getLong("duration")}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Boolean,onProfile:(Boolean)->Unit,saveOpen:Boolean,onSaveChange:(Boolean)->Unit,onAction:(String)->Unit) {
+fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Boolean,onProfile:(Boolean)->Unit,saveOpen:Boolean,onSaveChange:(Boolean)->Unit,blockingOpen:Boolean,onBlocking:(Boolean)->Unit,onAction:(String)->Unit) {
     // The foreground activity supplies one monotonic timer refresh per second.
     @Suppress("UNUSED_VARIABLE") val frame=revision
     val snackbar=remember { SnackbarHostState() }
@@ -94,6 +94,9 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
         if(profileOpen) ModalBottomSheet(onDismissRequest={onProfile(false)},containerColor=Paper) {
             ProfileSheet(revision,onProfile,onAction)
         }
+        if(blockingOpen) ModalBottomSheet(onDismissRequest={onBlocking(false)},sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true),containerColor=Paper) {
+            BlockingSheet(revision,onAction,{onBlocking(false)})
+        }
         if(saveOpen) SaveSheet(onDismiss={onSaveChange(false)},onSaved={onSaveChange(false);onTab("Journal");onAction("saved")})
     }
 }
@@ -124,7 +127,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
         if(Cloud.googlePending) item {
             Surface(shape=RoundedCornerShape(20.dp),color=Sage) {Column(Modifier.padding(16.dp)) {
                 Text("Google sign-in is waiting",fontWeight=FontWeight.Medium)
-                Text("Complete it in the secure tab, or cancel to start focusing.",fontSize=12.sp,color=Muted)
+                Text("Complete it in the Android account picker, or cancel to start focusing.",fontSize=12.sp,color=Muted)
                 TextButton(onClick={onAction("cancelGoogle")}){Text("Cancel sign-in")}
             }}
         }
@@ -179,7 +182,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
                 listOf(5,10).forEach {minutes->FilterChip(selected=Repository.pomodoro.breakMinutes==minutes,onClick={Repository.selectMode(true,minutes);onAction("refresh")},label={Text("$minutes min")})}
             }}
         }
-        if(pomo && BuildConfig.APP_BLOCKING_AVAILABLE) item {ActionRow("Protect your focus","Choose apps to keep out of your grove",Icons.Default.Shield){onAction("apps")}}
+        item {ActionRow("Protect your focus","Choose apps to keep out of your grove",Icons.Default.Shield){onAction("apps")}}
         item {TextButton(onClick={onAction("preview")},modifier=Modifier.fillMaxWidth()){Icon(Icons.Default.FastForward,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("Watch your grove grow")}}
         Repository.error?.let {error->item {Text(error,color=Coral,fontSize=12.sp)}}
     }
@@ -322,7 +325,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             }
         }}}
         item {Text("FOCUS & ACCESS",fontSize=10.sp,letterSpacing=1.5.sp,color=Muted,modifier=Modifier.padding(top=12.dp))}
-        if(BuildConfig.APP_BLOCKING_AVAILABLE)item {ActionRow("Apps & permissions","Choose what stays outside your focus",Icons.Default.Shield){onAction("apps")}}
+        item {ActionRow("Pause distracting apps","Social apps, chosen apps, and focus protection",Icons.Default.Shield){onAction("apps")}}
         item {ActionRow("Notifications","Focus controls when the app is in the background",Icons.Default.NotificationsNone){onAction("notifications")}}
         item {ActionRow("Tree growth preview","See a whole little lifecycle in seconds",Icons.Default.FastForward){onAction("preview")}}
         item {ActionRow("Export your journal","Keep a local JSON copy of your sessions",Icons.Default.FileDownload){onAction("export")}}
@@ -342,7 +345,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             if(Cloud.hasConflicts()) {Text("Session changes need review.");Row {TextButton(onClick={onAction("keepLocal")}){Text("Keep mine")};TextButton(onClick={onAction("keepCloud")}){Text("Use cloud")}}}
         } else {
             Text(if(Cloud.googlePending)"Continue with your Google account" else "One tap. One connected grove.",fontSize=18.sp,fontWeight=FontWeight.Medium,textAlign=TextAlign.Center)
-            Text("No password or registration form. Your browser securely connects you and returns here.",fontSize=12.sp,color=Muted,textAlign=TextAlign.Center)
+            Text("Choose your Google account in the native Android sheet. No browser or registration form.",fontSize=12.sp,color=Muted,textAlign=TextAlign.Center)
             if(Cloud.busy.get()) { SmallIcon("Connecting",Icons.Default.Sync,true){} }
             else if(Cloud.googlePending) {TextButton(onClick={onAction("cancelGoogle")}){Text("Cancel sign-in")}}
             else Button(onClick={onAction("google")},enabled=Repository.engine.phase=="idle",modifier=Modifier.fillMaxWidth().height(52.dp),shape=RoundedCornerShape(16.dp)){Text("Continue with Google")}

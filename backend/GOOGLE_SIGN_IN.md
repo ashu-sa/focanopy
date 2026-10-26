@@ -1,6 +1,6 @@
 # Google sign-in setup
 
-All four native clients use **Supabase Auth + Google OAuth with PKCE**. One Google **Web application** OAuth client supports Android, macOS, Windows and Ubuntu; no Google client secret belongs in an APK, executable, repository or chat.
+Android uses **Credential Manager + Supabase ID-token authentication**. Desktop clients use **Supabase Auth + Google OAuth with PKCE**. A Google **Web application** OAuth client supplies the token audience and desktop callback; Android also needs a package/certificate registration in the same Google project; no Google client secret belongs in an APK, executable, repository or chat.
 
 ## Hosted configuration status
 
@@ -31,11 +31,11 @@ The account owner must create and enter the Google OAuth credential. Do not send
 
 ## User experience
 
-Open **Account / Sync → Continue with Google**, choose your account in your system browser, and return to Focanopy. There is no separate registration form or PIN for Google users. Use the same Google account on every device to see one combined journal with device labels. Saved sessions are retained in the existing OS-secured credential stores and account-specific caches, so sign-in is not shown on every launch.
+On Android, tap the profile icon and choose Google in the native Android sheet. Desktop clients use the system authentication browser and return to Focanopy. There is no separate registration form or PIN for Google users. Use the same Google account on every device to see one combined journal with device labels. Saved sessions are retained in the existing OS-secured credential stores and account-specific caches, so sign-in is not shown on every launch.
 
 The optional **Add this device’s existing sessions to my account** checkbox controls local-only history upload. Google accounts and the older synthetic username/PIN accounts are separate identities; the app does not silently merge unrelated accounts. Signing out returns to local-only history, and account switching is blocked during an active timer.
 
-Android persists the pending verifier encrypted in its no-backup directory so the browser can return after activity/process recreation. Pending sign-ins expire after three minutes. Reopen Account / Sync to cancel a pending browser sign-in. macOS uses ASWebAuthenticationSession; Windows/Linux open the default browser and use a short-lived IPv4 loopback listener. No embedded login WebView is used.
+Android opens Credential Manager’s Google account sheet and exchanges its ID token through Supabase `grant_type=id_token`. A fresh random raw nonce is sent to Supabase and its SHA-256 hash to Google. There is no browser fallback. macOS uses ASWebAuthenticationSession; Windows/Linux open the default browser and use a short-lived IPv4 loopback listener. No embedded login WebView is used.
 
 ## End-to-end verification after setup
 
@@ -48,3 +48,16 @@ Android persists the pending verifier encrypted in its no-backup directory so th
 Unit tests cover PKCE challenge generation, exact callback/state checks, duplicate parameter rejection, cancellation/timeout, loopback ownership, safe vault/cache adoption and Google profile names. They do not replace the final real Google consent check, which requires the owner's configured OAuth client.
 
 References: [Supabase Google setup](https://supabase.com/docs/guides/auth/social-login/auth-google), [PKCE flow](https://supabase.com/docs/guides/auth/sessions/pkce-flow), [redirect allowlists](https://supabase.com/docs/guides/auth/redirect-urls).
+
+## Android native registration (26 October 2026)
+
+Created **Focanopy Android** in Google project `prismatic-cider-512606-m9`:
+
+- Package: `com.cybercat.stopwatch`
+- Signing SHA-1: `53:BC:60:F2:0A:32:83:9C:52:F9:5D:97:F6:65:92:DB:CE:54:5B:71`
+- Android client: `265421497125-7ut55643aeht34o5fvm5kfsmibmdeeio.apps.googleusercontent.com`
+- Web client / Credential Manager server audience: `265421497125-o0i3rkkj1mlckg0bnup48o67i3s0fm4n.apps.googleusercontent.com`
+
+Both APK editions use this package and certificate. Credential Manager requests the Web client audience, which is already configured in Supabase; no Android secret is embedded. Keep nonce validation enabled. Google configuration can take time to propagate. Google Cloud currently shows External / Testing; follow the console’s audience restrictions when testing. A Play Store signing key or different package requires its own Android registration. The isolated `.qa` build is not registered for real Google login.
+
+Implementation reference: [Android Credential Manager Google sign-in](https://developer.android.com/identity/sign-in/credential-manager-siwg-implementation).

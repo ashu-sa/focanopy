@@ -15,6 +15,7 @@ class TimerService: Service() {
     private var pet: LinearLayout? = null
     private var cat: TreeView? = null
     private var timeLabel: TextView? = null
+    private var phaseLabel:TextView?=null
     private var play: Button? = null
     private var finishControl: Button? = null
     private var params: WindowManager.LayoutParams? = null
@@ -73,32 +74,47 @@ class TimerService: Service() {
         if (!Repository.prefs.getBoolean("showPet",false) || !Settings.canDrawOverlays(this)) { removeOverlay(); return }
         if (pet == null) createOverlay()
         timeLabel?.text = clockText(Repository.displayTime())
-        play?.text = when (Repository.engine.phase) { "running" -> "Ⅱ"; "finished" -> "↓"; else -> "▶" }
+        play?.let {paintControl(it,when(Repository.engine.phase){"running"->"pause";"finished"->"save";else->"play"},true)}
+        phaseLabel?.text=when {Repository.pomodoroEnabled && Repository.pomodoro.stage=="break"->"TAKE A BREATH";Repository.pomodoroEnabled && Repository.pomodoro.stage=="ready"->"READY TO BLOOM";Repository.engine.phase=="running"->"GROWING WITH YOU";Repository.engine.phase=="paused"->"WATERING PAUSED";Repository.engine.phase=="finished"->"READY TO SAVE";else->"YOUR LITTLE GROVE"}
         play?.contentDescription = when(Repository.engine.phase) { "running" -> "Pause"; "finished" -> "Save session"; else -> "Start or resume" }
         pet?.alpha = Repository.prefs.getFloat("opacity",1f).coerceIn(.3f,1f)
         finishControl?.visibility=if(Repository.pomodoroEnabled)View.GONE else View.VISIBLE
+        finishControl?.isEnabled=Repository.engine.phase!="idle"
+        finishControl?.alpha=if(Repository.engine.phase=="idle") .35f else 1f
         cat?.refresh()
     }
     private fun createOverlay() {
-        val root = LinearLayout(this).apply { orientation=LinearLayout.VERTICAL; gravity=Gravity.CENTER; setPadding(0,0,0,0) }
-        cat = TreeView(this); root.addView(cat,LinearLayout.LayoutParams(dp(120),dp(58)))
-        timeLabel = TextView(this).apply { setTextColor(Color.rgb(173,218,173)); textSize=13f; typeface=android.graphics.Typeface.MONOSPACE; setBackgroundColor(Color.rgb(17,27,23)); gravity=Gravity.CENTER }
-        root.addView(timeLabel,LinearLayout.LayoutParams(dp(120),dp(25)))
-        val row = LinearLayout(this).apply { gravity=Gravity.CENTER }
-        fun control(symbol: String, description: String, action: () -> Unit): Button = Button(this).apply {
-            text=symbol; textSize=12f; contentDescription=description; setTextColor(Color.rgb(173,218,173))
-            background=android.graphics.drawable.GradientDrawable().apply { setColor(Color.rgb(17,27,23)); cornerRadius=dp(5).toFloat(); setStroke(dp(1),Color.rgb(86,126,88)) }; minWidth=0; minimumWidth=0; minHeight=0; minimumHeight=0; setPadding(0,0,0,0); setOnClickListener { action() }
+        val ink=Color.rgb(32,59,43)
+        val root=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL;setPadding(dp(8),dp(8),dp(8),dp(8))}
+        val panel=LinearLayout(this).apply {
+            orientation=LinearLayout.VERTICAL;setPadding(dp(12),dp(10),dp(12),dp(10))
+            background=android.graphics.drawable.GradientDrawable().apply {setColor(Color.rgb(245,246,239));cornerRadius=dp(23).toFloat();setStroke(dp(1),Color.rgb(208,221,200))}
+            elevation=dp(5).toFloat()
         }
-        play = control("▶","Start or resume") {
-            if (Repository.engine.phase == "finished") openApp("SAVE") else {
-                try { if (Repository.engine.phase == "running") Repository.pause() else Repository.start(); notifyState(); syncOverlay() } catch (e: Exception) { Toast.makeText(this,e.localizedMessage,Toast.LENGTH_LONG).show() }
+        root.addView(panel,LinearLayout.LayoutParams(-1,-1))
+        val header=LinearLayout(this).apply {gravity=Gravity.CENTER_VERTICAL}
+        cat=TreeView(this);header.addView(cat,LinearLayout.LayoutParams(dp(72),dp(54)))
+        val labels=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER_VERTICAL;setPadding(dp(8),0,0,0)}
+        phaseLabel=TextView(this).apply {setTextColor(Color.rgb(88,113,83));textSize=8f;letterSpacing=.06f;setSingleLine()};labels.addView(phaseLabel)
+        timeLabel=TextView(this).apply {setTextColor(ink);textSize=19f;typeface=android.graphics.Typeface.MONOSPACE;includeFontPadding=false;setPadding(0,dp(5),0,0);setSingleLine()};labels.addView(timeLabel)
+        header.addView(labels,LinearLayout.LayoutParams(0,-2,1f));panel.addView(header)
+        val row=LinearLayout(this).apply {gravity=Gravity.CENTER_VERTICAL;setPadding(0,dp(7),0,0)}
+        row.addView(TextView(this).apply {text="Drag to move";textSize=9f;setTextColor(Color.rgb(107,120,105))},LinearLayout.LayoutParams(0,-2,1f))
+        fun control(symbol:String,description:String,primary:Boolean=false,action:()->Unit):Button=Button(this).apply {
+            contentDescription=description;minWidth=0;minimumWidth=0;minHeight=0;minimumHeight=0;setPadding(dp(10),dp(10),dp(10),dp(10));stateListAnimator=null
+            paintControl(this,symbol,primary);setOnClickListener {action()}
+        }
+        play=control("play","Start or resume",true) {
+            if(Repository.engine.phase=="finished")openApp("SAVE") else {
+                try {if(Repository.engine.phase=="running")Repository.pause() else Repository.start();notifyState();syncOverlay()}catch(e:Exception){Toast.makeText(this,e.localizedMessage,Toast.LENGTH_LONG).show()}
             }
         }
-        row.addView(play,LinearLayout.LayoutParams(dp(40),dp(38)))
-        finishControl=control("✓","Finish session") { if (!Repository.pomodoroEnabled && Repository.engine.phase != "idle") openApp("FINISH") };row.addView(finishControl,LinearLayout.LayoutParams(dp(40),dp(38)))
-        row.addView(control("×","Hide tree; stopwatch continues") { Repository.prefs.edit().putBoolean("showPet",false).apply(); removeOverlay(); if (Repository.engine.phase == "idle") { stopForeground(STOP_FOREGROUND_REMOVE); stopSelf() } },LinearLayout.LayoutParams(dp(36),dp(38)))
-        root.addView(row)
-        val p = WindowManager.LayoutParams(dp(144),dp(126),WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT)
+        row.addView(play,LinearLayout.LayoutParams(dp(40),dp(40)))
+        finishControl=control("check","Finish session") {if(!Repository.pomodoroEnabled && Repository.engine.phase!="idle")openApp("FINISH")}
+        row.addView(finishControl,LinearLayout.LayoutParams(dp(40),dp(40)).apply {leftMargin=dp(5)})
+        row.addView(control("close","Hide tree; stopwatch continues") {Repository.prefs.edit().putBoolean("showPet",false).apply();removeOverlay();if(Repository.engine.phase=="idle"){stopForeground(STOP_FOREGROUND_REMOVE);stopSelf()}},LinearLayout.LayoutParams(dp(36),dp(40)).apply {leftMargin=dp(5)})
+        panel.addView(row)
+        val p=WindowManager.LayoutParams(dp(256),dp(148),WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,PixelFormat.TRANSLUCENT)
         p.gravity=Gravity.TOP or Gravity.START; p.x=Repository.prefs.getInt("petX",20); p.y=Repository.prefs.getInt("petY",150)
         fun clamp() { val bounds = if (Build.VERSION.SDK_INT>=30) windows.currentWindowMetrics.bounds else android.graphics.Rect(0,0,resources.displayMetrics.widthPixels,resources.displayMetrics.heightPixels); p.x=p.x.coerceIn(0,(bounds.width()-p.width).coerceAtLeast(0)); p.y=p.y.coerceIn(0,(bounds.height()-p.height-dp(32)).coerceAtLeast(0)) }
         clamp()
@@ -121,8 +137,15 @@ class TimerService: Service() {
         pet=root; params=p
         try { windows.addView(root,p) } catch(e:Exception) { pet=null; Toast.makeText(this,"Floating tree unavailable; use notification controls.",Toast.LENGTH_LONG).show() }
     }
+    private fun paintControl(button:Button,symbol:String,primary:Boolean=false) {
+        val fill=if(primary)Color.rgb(71,105,72) else Color.rgb(230,238,220)
+        val tint=if(primary)Color.WHITE else Color.rgb(71,105,72)
+        button.text=""
+        button.background=android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(Color.argb(35,32,59,43)),android.graphics.drawable.GradientDrawable().apply{setColor(fill);cornerRadius=dp(12).toFloat()},null)
+        button.setCompoundDrawablesRelative(UiIcon(symbol,tint).apply{setBounds(0,0,dp(18),dp(18))},null,null,null)
+    }
     private fun openApp(action:String) { if(action=="FINISH" && Repository.pomodoroEnabled)return; if(action=="FINISH") { Repository.finish(); notifyState(); syncOverlay() }; try { startActivity(Intent(this,MainActivity::class.java).setAction(if(action=="FINISH") "SAVE" else action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)) } catch (_:Exception) { if(action=="FINISH") Repository.finish(); notifyState() } }
-    private fun removeOverlay() { pet?.let { try { windows.removeView(it) } catch (_:Exception) {} }; pet=null; cat=null; timeLabel=null; play=null }
+    private fun removeOverlay() { pet?.let { try { windows.removeView(it) } catch (_:Exception) {} }; pet=null; cat=null; timeLabel=null; phaseLabel=null; play=null;finishControl=null }
     override fun onDestroy() { try { Repository.checkpoint() } catch (_:Exception) {}; handler.removeCallbacksAndMessages(null); removeOverlay(); super.onDestroy() }
     override fun onBind(intent:Intent?) = null
 }

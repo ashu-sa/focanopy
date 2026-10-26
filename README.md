@@ -34,7 +34,7 @@ The preview uses the app’s native desktop tree renderer. Growth is accelerated
 
 ### Android · the primary app
 
-The primary Android experience is built with **Jetpack Compose + Material 3**: warm cream surfaces, sage-green cards, animated focus transitions, a calendar journal, and a Google profile sheet. Tap the profile icon to connect through a secure in-app browser tab; the icon-only sync control combines sessions from devices using the same account.
+The primary Android experience is built with **Jetpack Compose + Material 3**: warm cream surfaces, sage-green cards, animated focus transitions, a calendar journal, and a Google profile sheet. Tap the profile icon to choose a Google account in Android’s native account sheet, without opening a browser; the icon-only sync control combines sessions from devices using the same account.
 
 <table>
   <tr>
@@ -56,7 +56,7 @@ The primary Android experience is built with **Jetpack Compose + Material 3**: w
   <tr><th>Make it yours</th><th>Apps & permissions</th><th>Ready to focus</th></tr>
   <tr>
     <td><img src="docs/screenshots/android-compose-settings.png" alt="Grouped Android settings for the account, floating tree, appearance, and permissions" width="250" /></td>
-    <td><img src="docs/screenshots/android-app-blocking-all.png" alt="App-blocking switches with app icons, browser exceptions, and permission status" width="250" /></td>
+    <td><img src="docs/screenshots/android-compose-blocking.png" alt="App-blocking switches with app icons, browser exceptions, and permission status" width="250" /></td>
     <td><img src="docs/screenshots/android-compose-focus.png" alt="Android Compose idle focus screen with square start and finish controls" width="250" /></td>
   </tr>
 </table>
@@ -64,6 +64,8 @@ The primary Android experience is built with **Jetpack Compose + Material 3**: w
 The focus page scrolls on shorter screens; navigation, profile, and sync remain available. Calendar selection and page scroll positions are retained when switching tabs. [Google profile sheet](docs/screenshots/android-compose-profile.png).
 
 </details>
+
+<p align="center"><img src="docs/screenshots/android-compose-floating.png" alt="Compact floating timer with growing tree and square icon controls" width="280" /></p>
 
 ### Native desktop companions
 
@@ -145,11 +147,11 @@ Rewards are derived from session durations. Short sessions add up, and edits or 
 
 **Android package choice:** the standard APK omits the Accessibility service, app-blocking implementation, and installed-app inventory queries. Timing, Pomodoro, trees, history, sync, notification controls, and the optional floating tree remain available. The separate [app-blocking APK](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Android-app-blocking.apk) declares sensitive Accessibility access and may be blocked by Play Protect when sideloaded. Do not disable Play Protect to install it. The app-blocking screenshots show this optional build.
 
-**App blocking (optional Android build / desktop):** block selected apps, or all apps except browsers and your exclusions. Blocking releases during pauses and breaks. Android requires explicit Accessibility access; desktop behaviour depends on the OS. See [Pomodoro & app blocking](POMODORO.md) for setup and platform limits.
+**App blocking (optional Android build / desktop):** select social apps, choose individual apps, or block all apps except browsers and your exclusions. Android also offers a five-minute pause for blocks. Blocking works with the ordinary timer and Flower Focus, and releases during pauses and breaks. Android requires explicit Accessibility access; desktop behaviour depends on the OS. See [Pomodoro & app blocking](POMODORO.md) for setup and platform limits.
 
 **Cross-device history:** sign in once with the same username and four-digit PIN on each device. Completed sessions sync with their source-device labels; active timers stay on their own devices. Offline edits are retained, and conflicting edits have explicit resolution choices. Existing local history uploads only when you choose to include it. See [accounts & sync](backend/README.md).
 
-**Google sign-in:** Google OAuth with PKCE is enabled on the hosted backend for Android, macOS, Windows and Linux. Open **Account / Sync → Continue with Google**; login is remembered on your device. Existing username/PIN accounts remain separate. See [setup and verification](backend/GOOGLE_SIGN_IN.md).
+**Google sign-in:** Android uses Credential Manager’s native Google account sheet with a nonce-protected ID-token exchange. Desktop apps use Google OAuth with PKCE. Tap the profile icon to connect; login is remembered on your device. Existing username/PIN accounts remain separate. See [setup and verification](backend/GOOGLE_SIGN_IN.md).
 
 <details>
 <summary><strong>Desktop keyboard shortcuts</strong></summary>
@@ -169,7 +171,7 @@ Start/pause/finish shortcuts are active only while the floating tree is visible.
 
 | Area | Implementation |
 |---|---|
-| Android | Kotlin · native Views & Canvas · foreground service · system chronometer · optional WindowManager overlay |
+| Android | Kotlin · Jetpack Compose / Material 3 · Canvas tree · foreground service · system chronometer · optional WindowManager overlay |
 | macOS | Swift · SwiftUI · MenuBarExtra · floating NSPanel |
 | Windows & Ubuntu | Python · PySide6 / Qt Widgets |
 | Timing & animation | Monotonic elapsed-time clocks · deterministic vector growth · continuous grove handoffs |

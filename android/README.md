@@ -24,9 +24,9 @@ Notifications are the default background experience. You do **not** need floatin
 
 ## Optional floating tree
 
-Open **Settings → Floating tree**, grant Android’s **Display over other apps** permission, then return to Focanopy. A small transparent tree appears above ordinary apps:
+Open **Settings → Floating tree**, grant Android’s **Display over other apps** permission, then return to Focanopy. A compact cream-and-moss timer card appears above ordinary apps, with a growing tree, phase label, readable elapsed time and square icon controls:
 
-- Drag the tree to move it; position is remembered.
+- Drag anywhere on the card, including the timer and controls, to move it; position is remembered. A drag never activates the underlying control.
 - ▶ / Ⅱ starts, resumes, or pauses.
 - ✓ finishes the session and opens naming.
 - × hides the pet without stopping an active session.
@@ -39,7 +39,7 @@ If the OS does not allow an overlay, notification controls remain available. Sen
 
 The main focus screen, journal, settings, profile bottom sheet, and in-app session naming use Jetpack Compose and Material 3. Page transitions, changing focus messages, progress, play/pause icons, session-list changes and sync arrows animate through Compose. System animation scaling is respected. The existing native tree renderer is hosted through `AndroidView`; timer state remains in `Repository` / `TimerEngine` and the foreground service, independent of composition and screen refreshes.
 
-The profile icon starts Google OAuth with PKCE in a secure Custom Tab, styled to match Focanopy. It returns through the existing exact callback and retains encrypted credentials in Android Keystore. No Google password is entered in the app and there is no separate registration form. When logged in, the profile sheet shows the saved account; the icon-only sync button uploads pending sessions and downloads device history. Existing local-only sessions are not silently imported. Actual Google account consent and cross-device validation require a user-driven sign-in; the tests cover OAuth callback handling, not personal Google credentials.
+The profile icon opens Android Credential Manager’s native Google account sheet. It never opens a browser or falls back to a web login. Google Play services and a Google account must be available on the device. The app exchanges the Google ID token with Supabase using a per-attempt nonce; credentials are encrypted with Android Keystore. No Google password is entered in Focanopy and no separate registration form is needed. When logged in, the profile sheet shows the remembered account; the icon-only sync button uploads pending sessions and downloads device history. Existing local-only sessions are not silently imported. Real Google consent and cross-device verification still require a user-driven sign-in on a Google-enabled device.
 
 ## Journal
 
@@ -67,7 +67,7 @@ Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Verification
 
-Both standard and app-blocking builds pass lint and 18 JVM tests each. Four Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
+Both standard and app-blocking builds pass lint and 20 JVM tests each. Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
 
 Physical-phone notification/overlay behavior, manufacturer battery policies, deep-sleep/reboot recovery, and real Google consent across devices still require device testing. Earlier View-based instrumentation files are historical and do not validate the new Compose screens.
 
@@ -119,3 +119,21 @@ adb -s emulator-5556 shell am instrument -w -e class com.cybercat.stopwatch.Comp
 ```
 
 These tests use Compose semantics to exercise actual start/pause/resume/save/rename, calendar totals, profile/settings, automatic Pomodoro saving, background timing, and the standard package’s absence of the Accessibility blocker. The older custom View-based instrumentation is historical; use these Compose tests for the current UI.
+
+## Focus protection (optional app-blocking edition)
+
+Open **Settings → Pause distracting apps**. Enable **Block during focus**, then grant Accessibility access in Android Settings yourself. Use **Select social apps**, individual app switches, or **All apps except browsers** with per-app exclusions. Calls, Home, keyboards and essential system screens remain available.
+
+Blocking works during ordinary timing and Flower Focus. Opening a selected app returns to Home; Android does not suspend or uninstall that app. Pausing the timer, taking a Pomodoro break or disabling blocking releases it. **Pause for 5 min** temporarily allows apps without stopping the timer; **Resume blocks** restores protection early. Blocking resumes when that pause expires, including when a selected app is still open. Force stop, disabled Accessibility or device restrictions can stop enforcement.
+
+The standard APK shows an explanation and download link rather than requesting Accessibility or listing installed apps. Keep Play Protect enabled.
+
+The optional blocker enforcement check runs separately from Compose’s ActivityScenario so opening another app does not invalidate UI-test lifecycle ownership:
+
+```sh
+./gradlew -PcomposeQa -PmvpQa :app:assembleQa :app:assembleQaAndroidTest
+# Install both QA APKs on your isolated emulator, then run:
+adb -s emulator-5556 shell am instrument -w -e class com.cybercat.stopwatch.ComposeMvpTest,com.cybercat.stopwatch.FocusBlockingDeviceTest com.cybercat.stopwatch.qa.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+The seven-test app-blocking run covers returning a selected app to Home, temporarily releasing it, restoring protection and allowing it while timing is paused. Only the isolated `.qa` package is used; no real Google credentials or personal sessions are exercised.

@@ -46,8 +46,10 @@ object Cloud {
         if(age !in 0..180000) { googleFile.delete(); return null }
         return value
     }
-    val googlePending get()=try { pendingGoogle()!=null } catch(_:Exception) { googleFile.delete(); false }
-    fun cancelGoogle() { googleFile.delete() }
+    @Volatile var nativeGooglePending=false
+    fun nativeSignInStatus(message:String) { status=message; changed?.invoke() }
+    val googlePending get()=nativeGooglePending || try { pendingGoogle()!=null } catch(_:Exception) { googleFile.delete(); false }
+    fun cancelGoogle() { nativeGooglePending=false; googleFile.delete() }
     fun beginGoogle(include:Boolean):String {
         check(owner==null && Repository.engine.phase=="idle") { "Finish your current timer before signing in." }
         val connection=URL(URL_ROOT+"/auth/v1/settings").openConnection() as HttpURLConnection
@@ -148,6 +150,10 @@ object Cloud {
     fun authenticate(name:String,pin:String,signup:Boolean,existing:List<JSONObject>) {
         val result=post("/functions/v1/cybercat-account",JSONObject().put("action",if(signup)"signup" else "login").put("username",name).put("pin",pin))
         acceptLogin(result,existing)
+    }
+    fun completeNativeGoogle(idToken:String, rawNonce:String) {
+        require(idToken.isNotBlank() && rawNonce.length>=32)
+        acceptLogin(post("/auth/v1/token?grant_type=id_token",JSONObject().put("provider","google").put("id_token",idToken).put("nonce",rawNonce)),emptyList())
     }
     private fun acceptLogin(result:JSONObject,existing:List<JSONObject>) {
         val loaded=read(result.getJSONObject("user").getString("id")); saveLogin(result)

@@ -19,7 +19,12 @@ import androidx.activity.SystemBarStyle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.browser.customtabs.CustomTabsIntent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.NoCredentialException
 import java.time.*
 import java.time.format.DateTimeFormatter
 
@@ -34,6 +39,8 @@ class MainActivity: androidx.activity.ComponentActivity() {
     private val composeRevision = mutableIntStateOf(0)
     private var composeProfileOpen by androidx.compose.runtime.mutableStateOf(false)
     private var composeSaveOpen by androidx.compose.runtime.mutableStateOf(false)
+    private var nativeSignInJob:Job?=null
+    private var composeBlockingOpen by androidx.compose.runtime.mutableStateOf(false)
     private var phase = ""
     private var pomoStage=""
     private var requestOverlay = false
@@ -82,67 +89,7 @@ class MainActivity: androidx.activity.ComponentActivity() {
     private fun accountDialog() {
         composeProfileOpen = true; render(); return
     }
-    private fun focusApps() {
-        if(!BuildConfig.APP_BLOCKING_AVAILABLE)return
-        val prefs=Repository.prefs
-        val packages=packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)
-            .filter {it.activityInfo.packageName!=packageName && it.activityInfo.packageName !in setOf("com.android.settings","com.google.android.dialer","com.android.dialer","com.android.phone")}
-            .distinctBy {it.activityInfo.packageName}.sortedBy {it.loadLabel(packageManager).toString().lowercase()}
-        val browsers=packageManager.queryIntentActivities(Intent(Intent.ACTION_VIEW,Uri.parse("https://example.com")).addCategory(Intent.CATEGORY_BROWSABLE),PackageManager.GET_RESOLVED_FILTER).filter {it.filter?.countDataAuthorities()==0}.map {it.activityInfo.packageName}.toSet()
-        val home=packageManager.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),0).map {it.activityInfo.packageName}.toSet()
-        val keyboards=(getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager).enabledInputMethodList.map {it.packageName}.toSet()
-        val blocked=(prefs.getStringSet("blockedApps",emptySet()) ?: emptySet()).toMutableSet()
-        val excluded=(prefs.getStringSet("excludedApps",emptySet()) ?: emptySet()).toMutableSet()
-        var all=prefs.getBoolean("focusBlockAll",false)
-        val dialog=Dialog(this)
-        val panel=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL;setPadding(dp(20),dp(22),dp(20),dp(14));background=card(bg)}
-        panel.addView(text("Apps & permissions",24f,cyan).apply {typeface=Typeface.DEFAULT_BOLD})
-        panel.addView(text("Switch on the apps you want to block while you focus.",12f,Color.rgb(161,181,165)))
-        fun switch(title:String,on:Boolean)=Switch(this).apply {text=title;isChecked=on;textSize=14f;setTextColor(cyan);minHeight=dp(52);setPadding(dp(8),0,dp(8),0);contentDescription=title}
-        val master=switch("App blocking",prefs.getBoolean("focusBlocking",false));panel.addView(master)
-        master.setOnCheckedChangeListener {_,on->prefs.edit().putBoolean("focusBlocking",on).apply()}
-        val allSwitch=switch("Block all except browsers",all);panel.addView(allSwitch)
-        val access=text("",12f,Color.rgb(161,181,165));panel.addView(access)
-        val permission=button("Enable access") {startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))};panel.addView(permission)
-        refreshFocusPermissions={
-            val component=ComponentName(packageName,"$packageName.FocusAccessibilityService").flattenToString()
-            val granted=(Settings.Secure.getString(contentResolver,Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) ?: "").split(':').any {it.equals(component,true)}
-            access.text=if(granted)"Accessibility access is enabled · Pauses and breaks allow apps" else "Accessibility access is needed to block apps. No screen contents or typing are read."
-            permission.text=if(granted)"Manage access" else "Enable access"
-        };refreshFocusPermissions?.invoke()
-        val search=EditText(this).apply {hint="Find an app";contentDescription="Find an app";setSingleLine();textSize=14f;setTextColor(Color.WHITE);setHintTextColor(Color.rgb(135,157,140))};panel.addView(search)
-        val list=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL}
-        val scroll=ScrollView(this).apply {addView(list);isFillViewport=false};panel.addView(scroll,LinearLayout.LayoutParams(-1,0,1f))
-        fun drawApps() {
-            list.removeAllViews()
-            for(info in packages) {
-                val id=info.activityInfo.packageName;val name=info.loadLabel(packageManager).toString()
-                if(id in home || id in keyboards)continue
-                val browserAllowed=all && id in browsers
-                val row=LinearLayout(this).apply {gravity=Gravity.CENTER_VERTICAL;setPadding(dp(10),dp(9),dp(8),dp(9));background=card();tag=name.lowercase()}
-                row.addView(ImageView(this).apply {setImageDrawable(info.loadIcon(packageManager));importantForAccessibility=View.IMPORTANT_FOR_ACCESSIBILITY_NO},LinearLayout.LayoutParams(dp(32),dp(32)).apply {setMargins(0,0,dp(12),0)})
-                val labels=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL};labels.addView(text(name,14f));labels.addView(text(if(browserAllowed)"Browser · always allowed" else "On blocks this app",10f,Color.rgb(161,181,165)))
-                row.addView(labels,LinearLayout.LayoutParams(0,-2,1f))
-                val toggle=Switch(this).apply {isChecked=!browserAllowed && id !in excluded && (all || id in blocked);isEnabled=!browserAllowed;contentDescription="$name blocking";minWidth=dp(48);minHeight=dp(48)}
-                toggle.setOnCheckedChangeListener {_,on->
-                    if(all) {if(on)excluded.remove(id) else excluded.add(id)} else {if(on){blocked.add(id);excluded.remove(id)}else blocked.remove(id)}
-                    prefs.edit().putStringSet("blockedApps",blocked.toSet()).putStringSet("excludedApps",excluded.toSet()).apply()
-                }
-                row.addView(toggle);row.setOnClickListener {if(toggle.isEnabled)toggle.isChecked=!toggle.isChecked}
-                list.addView(row,LinearLayout.LayoutParams(-1,-2).apply {setMargins(0,0,0,dp(6))})
-                row.visibility=if(name.contains(search.text.toString(),true))View.VISIBLE else View.GONE
-            }
-        }
-        allSwitch.setOnCheckedChangeListener {_,on->all=on;prefs.edit().putBoolean("focusBlockAll",on).apply();drawApps()}
-        search.addTextChangedListener(object:android.text.TextWatcher {
-            override fun beforeTextChanged(s:CharSequence?,start:Int,count:Int,after:Int){}
-            override fun onTextChanged(s:CharSequence?,start:Int,before:Int,count:Int){for(i in 0 until list.childCount){val row=list.getChildAt(i);row.visibility=if(row.tag.toString().contains(s.toString(),true))View.VISIBLE else View.GONE}}
-            override fun afterTextChanged(s:android.text.Editable?){}
-        })
-        drawApps();panel.addView(text("On = blocked · Off = allowed. Browsers stay available in all-app mode.",10f,Color.rgb(161,181,165)))
-        panel.addView(button("Close") {dialog.dismiss()})
-        panel.isFocusableInTouchMode=true;panel.requestFocus();dialog.setContentView(panel);dialog.setOnDismissListener {refreshFocusPermissions=null;render()};dialog.show();dialog.window?.setBackgroundDrawable(card(bg));dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE or WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);dialog.window?.setLayout(resources.displayMetrics.widthPixels-dp(24),(resources.displayMetrics.heightPixels*.88).toInt())
-    }
+    private fun focusApps() { composeBlockingOpen=true;render() }
     private fun notifications() { if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED) requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS),5) }
     private fun text(value:String,size:Float=15f,color:Int=Color.rgb(238,240,220))=TextView(this).apply { text=value; textSize=size; setTextColor(color); includeFontPadding=false; setLineSpacing(dp(3).toFloat(),1f); setPadding(0,dp(5),0,dp(5)) }
     private fun card(color:Int=surface)=GradientDrawable().apply { setColor(color); cornerRadius=dp(16).toFloat() }
@@ -158,7 +105,7 @@ class MainActivity: androidx.activity.ComponentActivity() {
         if(!shellReady) {
             shellReady=true
             setContent {
-                FocanopyScreen(composeRevision.intValue, tab, { tab=it; render() }, composeProfileOpen, {composeProfileOpen=it}, composeSaveOpen, {composeSaveOpen=it}, ::composeAction)
+                FocanopyScreen(composeRevision.intValue, tab, { tab=it; render() }, composeProfileOpen, {composeProfileOpen=it}, composeSaveOpen, {composeSaveOpen=it}, composeBlockingOpen, {composeBlockingOpen=it}, ::composeAction)
             }
         }
         composeRevision.intValue++
@@ -172,11 +119,13 @@ class MainActivity: androidx.activity.ComponentActivity() {
             "reset" -> { Repository.discard(); service("SYNC") }
             "google" -> beginGoogleSignIn()
             "sync" -> if(Cloud.owner!=null) Cloud.run({Cloud.sync()}) else beginGoogleSignIn()
-            "signout" -> if(Repository.engine.phase=="idle" && !Cloud.busy.get()) {Cloud.signOut();Repository.loadGuest()}
-            "cancelGoogle" -> Cloud.cancelGoogle()
+            "signout" -> if(Repository.engine.phase=="idle" && !Cloud.busy.get()) {Cloud.signOut();Repository.loadGuest();lifecycleScope.launch {try {NativeGoogle.clearSession(this@MainActivity)}catch(_:Exception){}}}
+            "cancelGoogle" -> {nativeSignInJob?.cancel();Cloud.cancelGoogle()}
             "keepLocal" -> Cloud.run({Cloud.resolve(true);Cloud.sync()})
             "keepCloud" -> Cloud.run({Cloud.resolve(false);Cloud.sync()})
             "apps" -> focusApps()
+            "accessibility" -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            "blockingDownload" -> startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://github.com/ashu-sa/cyber-cat/releases/latest")))
             "preview" -> treePreviewDialog()
             "export" -> exportHistory()
             "notifications" -> startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,packageName))
@@ -190,18 +139,25 @@ class MainActivity: androidx.activity.ComponentActivity() {
     } }
     private fun beginGoogleSignIn() {
         if(Repository.engine.phase!="idle") {Toast.makeText(this,"Finish your timer before connecting an account",Toast.LENGTH_LONG).show();return}
-        if(Cloud.owner!=null || Cloud.busy.get() || Cloud.googlePending)return
-        var url=""
-        Cloud.run({url=Cloud.beginGoogle(false)}) { error ->
-            if(error==null && !isFinishing && !isDestroyed) {
-                try { CustomTabsIntent.Builder().setShowTitle(true).setShareState(CustomTabsIntent.SHARE_STATE_OFF)
-                    .setDefaultColorSchemeParams(androidx.browser.customtabs.CustomTabColorSchemeParams.Builder().setToolbarColor(bg).build())
-                    .build().launchUrl(this,Uri.parse(url)) }
-                catch(_:ActivityNotFoundException) {Cloud.cancelGoogle();Toast.makeText(this,"Install a browser to continue with Google",Toast.LENGTH_LONG).show()}
-            }
-            render()
+        if(Cloud.owner!=null || Cloud.busy.get() || nativeSignInJob?.isActive==true)return
+        Cloud.cancelGoogle()
+        nativeSignInJob=lifecycleScope.launch {
+            Cloud.nativeGooglePending=true;Cloud.nativeSignInStatus("Choose your Google account in the Android sign-in sheet.");render()
+            try {
+                val identity=NativeGoogle.signIn(this@MainActivity)
+                Cloud.run({Cloud.completeNativeGoogle(identity.token,identity.rawNonce)}) { error ->
+                    render();if(error==null)Cloud.run({Cloud.sync()})
+                }
+            } catch(_:GetCredentialCancellationException) {
+                Cloud.nativeSignInStatus("Sign-in cancelled. Your local sessions are safe.")
+            } catch(_:NoCredentialException) {
+                Cloud.nativeSignInStatus("No Google account is available. Add one in Android Settings, then try again.")
+            } catch(_:CancellationException) {
+                Cloud.nativeSignInStatus("Sign-in cancelled. Your local sessions are safe.")
+            } catch(_:Exception) {
+                Cloud.nativeSignInStatus("Google couldn’t connect. Check your connection and Google Play services, then try again.")
+            } finally {Cloud.nativeGooglePending=false;render()}
         }
-        render()
     }
     private fun focusCard():LinearLayout = LinearLayout(this).apply {
         orientation=LinearLayout.VERTICAL;setPadding(dp(20),dp(18),dp(20),dp(18))
