@@ -35,6 +35,10 @@ Open **Settings → Floating tree**, grant Android’s **Display over other apps
 
 If the OS does not allow an overlay, notification controls remain available. Sensitive system screens, banking apps, lock screens, some manufacturers, and managed devices may hide overlays. No Accessibility service is requested. If launching the naming screen from the overlay is blocked by Android, the finished session remains available from the notification.
 
+## Appearance
+
+Open **Settings → Appearance** and choose **System**, **Light**, or **Dark**. System follows Android’s current theme; explicit choices are remembered across restarts. The focus screen, calendar, profile, save dialogs, app-blocking sheet, system bars and floating card share the same palette. Changing appearance does not stop or reset a timer.
+
 ## Compose MVP interface
 
 The main focus screen, journal, settings, profile bottom sheet, and in-app session naming use Jetpack Compose and Material 3. Page transitions, changing focus messages, progress, play/pause icons, session-list changes and sync arrows animate through Compose. System animation scaling is respected. The existing native tree renderer is hosted through `AndroidView`; timer state remains in `Repository` / `TimerEngine` and the foreground service, independent of composition and screen refreshes.
@@ -67,7 +71,7 @@ Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Verification
 
-Both standard and app-blocking builds pass lint and 20 JVM tests each. Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
+Both standard and app-blocking builds pass lint and 22 JVM tests each. Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
 
 Physical-phone notification/overlay behavior, manufacturer battery policies, deep-sleep/reboot recovery, and real Google consent across devices still require device testing. Earlier View-based instrumentation files are historical and do not validate the new Compose screens.
 

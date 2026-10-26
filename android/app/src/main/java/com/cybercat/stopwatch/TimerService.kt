@@ -8,6 +8,7 @@ import android.os.*
 import android.provider.Settings
 import android.view.*
 import android.widget.*
+import androidx.compose.ui.graphics.toArgb
 
 class TimerService: Service() {
     private val handler = Handler(Looper.getMainLooper())
@@ -20,6 +21,9 @@ class TimerService: Service() {
     private var finishControl: Button? = null
     private var params: WindowManager.LayoutParams? = null
     private var lastNotice = ""
+    private var overlayDark=false
+    private val palette get()=if(Appearance.dark(this))Appearance.night else Appearance.light
+    override fun onConfigurationChanged(config:android.content.res.Configuration) {super.onConfigurationChanged(config);syncOverlay()}
     private val tick = object: Runnable { override fun run() {
         try { Repository.advancePomodoro();Repository.focusNotice?.let { remind(it);Repository.focusNotice=null };syncOverlay(); if (Repository.engine.phase+(if(Repository.pomodoroEnabled)Repository.pomodoro.stage else "") != lastNotice) notifyState() } catch (_: Exception) { removeOverlay() }
         handler.postDelayed(this, 1000)
@@ -72,6 +76,7 @@ class TimerService: Service() {
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
     private fun syncOverlay() {
         if (!Repository.prefs.getBoolean("showPet",false) || !Settings.canDrawOverlays(this)) { removeOverlay(); return }
+        if(pet!=null && overlayDark!=Appearance.dark(this))removeOverlay()
         if (pet == null) createOverlay()
         timeLabel?.text = clockText(Repository.displayTime())
         play?.let {paintControl(it,when(Repository.engine.phase){"running"->"pause";"finished"->"save";else->"play"},true)}
@@ -84,22 +89,23 @@ class TimerService: Service() {
         cat?.refresh()
     }
     private fun createOverlay() {
-        val ink=Color.rgb(32,59,43)
+        overlayDark=Appearance.dark(this)
+        val ink=palette.onSurface.toArgb()
         val root=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL;setPadding(dp(8),dp(8),dp(8),dp(8))}
         val panel=LinearLayout(this).apply {
             orientation=LinearLayout.VERTICAL;setPadding(dp(12),dp(10),dp(12),dp(10))
-            background=android.graphics.drawable.GradientDrawable().apply {setColor(Color.rgb(245,246,239));cornerRadius=dp(23).toFloat();setStroke(dp(1),Color.rgb(208,221,200))}
+            background=android.graphics.drawable.GradientDrawable().apply {setColor(palette.background.toArgb());cornerRadius=dp(23).toFloat();setStroke(dp(1),palette.outline.toArgb())}
             elevation=dp(5).toFloat()
         }
         root.addView(panel,LinearLayout.LayoutParams(-1,-1))
         val header=LinearLayout(this).apply {gravity=Gravity.CENTER_VERTICAL}
         cat=TreeView(this);header.addView(cat,LinearLayout.LayoutParams(dp(72),dp(54)))
         val labels=LinearLayout(this).apply {orientation=LinearLayout.VERTICAL;gravity=Gravity.CENTER_VERTICAL;setPadding(dp(8),0,0,0)}
-        phaseLabel=TextView(this).apply {setTextColor(Color.rgb(88,113,83));textSize=8f;letterSpacing=.06f;setSingleLine()};labels.addView(phaseLabel)
+        phaseLabel=TextView(this).apply {setTextColor(palette.onSurfaceVariant.toArgb());textSize=8f;letterSpacing=.06f;setSingleLine()};labels.addView(phaseLabel)
         timeLabel=TextView(this).apply {setTextColor(ink);textSize=19f;typeface=android.graphics.Typeface.MONOSPACE;includeFontPadding=false;setPadding(0,dp(5),0,0);setSingleLine()};labels.addView(timeLabel)
         header.addView(labels,LinearLayout.LayoutParams(0,-2,1f));panel.addView(header)
         val row=LinearLayout(this).apply {gravity=Gravity.CENTER_VERTICAL;setPadding(0,dp(7),0,0)}
-        row.addView(TextView(this).apply {text="Drag to move";textSize=9f;setTextColor(Color.rgb(107,120,105))},LinearLayout.LayoutParams(0,-2,1f))
+        row.addView(TextView(this).apply {text="Drag to move";textSize=9f;setTextColor(palette.onSurfaceVariant.toArgb())},LinearLayout.LayoutParams(0,-2,1f))
         fun control(symbol:String,description:String,primary:Boolean=false,action:()->Unit):Button=Button(this).apply {
             contentDescription=description;minWidth=0;minimumWidth=0;minHeight=0;minimumHeight=0;setPadding(dp(10),dp(10),dp(10),dp(10));stateListAnimator=null
             paintControl(this,symbol,primary);setOnClickListener {action()}
@@ -138,8 +144,8 @@ class TimerService: Service() {
         try { windows.addView(root,p) } catch(e:Exception) { pet=null; Toast.makeText(this,"Floating tree unavailable; use notification controls.",Toast.LENGTH_LONG).show() }
     }
     private fun paintControl(button:Button,symbol:String,primary:Boolean=false) {
-        val fill=if(primary)Color.rgb(71,105,72) else Color.rgb(230,238,220)
-        val tint=if(primary)Color.WHITE else Color.rgb(71,105,72)
+        val fill=if(primary)palette.primary.toArgb() else palette.surfaceVariant.toArgb()
+        val tint=if(primary)palette.onPrimary.toArgb() else palette.primary.toArgb()
         button.text=""
         button.background=android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(Color.argb(35,32,59,43)),android.graphics.drawable.GradientDrawable().apply{setColor(fill);cornerRadius=dp(12).toFloat()},null)
         button.setCompoundDrawablesRelative(UiIcon(symbol,tint).apply{setBounds(0,0,dp(18),dp(18))},null,null,null)

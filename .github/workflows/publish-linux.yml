@@ -68,7 +68,7 @@ jobs:
           source=json.load(open('run.json'))['head_sha']
           body=json.load(open('release.json'))['body']
           marker='\n## Portable Linux update\n'
-          body=body.split(marker)[0]+marker+f'\nNative ARM64/aarch64 and Intel/AMD x86-64 AppImages are now available. Both passed packaged X11 and native Wayland smoke tests on Fedora 43 and 44. No host Python installation is required. Use `--appimage-extract-and-run` if FUSE is unavailable.\n\nSee the [Fedora GNOME guide](https://github.com/ashu-sa/cyber-cat/blob/main/desktop/LINUX.md). ARM64 requires glibc 2.39+; x86-64 requires glibc 2.35+.\n\nLinux packaging source: `{source}`; verified build: https://github.com/ashu-sa/cyber-cat/actions/runs/{os.environ["BUILD_RUN"]}. Existing Android, macOS and Windows packages are unchanged.\n'
+          body=body.split(marker)[0]+marker+f'\nNative ARM64/aarch64 and Intel/AMD x86-64 AppImages are now available. Both passed packaged X11 and native Wayland smoke tests on Fedora 43 and 44. No host Python installation is required. Use `--appimage-extract-and-run` if FUSE is unavailable.\n\nSee the [Fedora GNOME guide](https://github.com/ashu-sa/focanopy/blob/main/desktop/LINUX.md). ARM64 requires glibc 2.39+; x86-64 requires glibc 2.35+.\n\nLinux packaging source: `{source}`; verified build: https://github.com/ashu-sa/focanopy/actions/runs/{os.environ["BUILD_RUN"]}. Existing Android, macOS and Windows packages are unchanged.\n'
           Path('release-notes.md').write_text(body)
           PY
           gh release upload "$RELEASE_TAG" release/* --clobber

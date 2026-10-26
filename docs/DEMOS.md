@@ -1,6 +1,6 @@
 # Focanopy app demos
 
-[← Back to the README](../README.md) · [Download the apps](https://github.com/ashu-sa/cyber-cat/releases/latest)
+[← Back to the README](../README.md) · [Download the apps](https://github.com/ashu-sa/focanopy/releases/latest)
 
 These walkthroughs use the real native app screens. Android screenshots show version 1.14 with sample sessions on an isolated Android 15 emulator. They do not show a live Google account or a completed Google consent flow.
 
@@ -50,6 +50,12 @@ Use the **app-blocking APK** for this demo. The standard APK intentionally exclu
 
 Blocking returns selected apps to Home; it does not suspend or uninstall packages. Keep Play Protect enabled. See [Android setup and limitations](../android/README.md).
 
+## Android: appearance
+
+Open **Settings → Appearance** and choose **System**, **Light**, or **Dark**. The choice is saved across restarts and updates the main app, sheets, system bars and floating companion. You can change it during an active timer without losing time.
+
+<p align="center"><img src="screenshots/android-compose-dark-settings.png" width="330" alt="Android appearance settings with dark mode selected" /></p>
+
 ## Android: profile and sync
 
 Tap the profile icon, then **Continue with Google**. Android opens its native Google account sheet; Focanopy does not launch a browser. The device needs Google Play services and a Google account. Login is remembered; the sync-arrows icon uploads and downloads completed sessions from the same account across devices.
@@ -80,9 +86,9 @@ Linux screenshots were captured on Ubuntu. Fedora GNOME ARM64 and x86-64 package
 
 ## Tree lifecycle simulator
 
-[![Native tree lifecycle preview](screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4)
+[![Native tree lifecycle preview](screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/focanopy/releases/download/v1.14.0/focanopy-demo.mp4)
 
-[Watch the 27-second MP4](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4) · [Repository video](media/focanopy-demo.mp4)
+[Watch the 27-second MP4](https://github.com/ashu-sa/focanopy/releases/download/v1.14.0/focanopy-demo.mp4) · [Repository video](media/focanopy-demo.mp4)
 
 The recording uses the native desktop tree renderer, with accelerated growth and the real-speed 2.4-second handoff between trees. It demonstrates growth, flowering, overlapping completed trees and withering. It is a renderer demo, not a recording of a complete timer session.
 

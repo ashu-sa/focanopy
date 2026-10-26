@@ -15,7 +15,7 @@ class ComposeMvpTest {
     @Before fun clean() {
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             check(compose.activity.packageName.endsWith(".qa"))
-            Repository.prefs.edit().putBoolean("showPet",false).putBoolean("animate",false).putBoolean("focusBlocking",false).apply()
+            Repository.prefs.edit().putBoolean("showPet",false).putBoolean("animate",false).putBoolean("focusBlocking",false).putString(Appearance.KEY,"light").apply()
             Repository.discard();Repository.selectMode(false);Repository.replace(emptyList())
             compose.activity.startForegroundService(android.content.Intent(compose.activity,TimerService::class.java).setAction("SYNC"))
         }
@@ -105,7 +105,7 @@ class ComposeMvpTest {
         info.flags=info.flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         automation.serviceInfo=info
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            Repository.prefs.edit().putBoolean("showPet",true).putFloat("opacity",1f).putInt("petX",20).putInt("petY",150).apply()
+            Repository.prefs.edit().putBoolean("showPet",true).putFloat("opacity",1f).putInt("petX",20).putInt("petY",150).putString(Appearance.KEY,"dark").apply()
             Repository.start();Repository.engine.accumulated=28*60000L;Repository.engine.anchor=android.os.SystemClock.elapsedRealtime()
             compose.activity.startForegroundService(android.content.Intent(compose.activity,TimerService::class.java).setAction("SHOW"))
         }
@@ -117,7 +117,7 @@ class ComposeMvpTest {
         }
         fun overlay()=automation.windows.mapNotNull{it.root}.firstOrNull{find(it,"Hide tree; stopwatch continues")!=null}
         compose.waitUntil(6000){overlay()!=null}
-        capture("floating")
+        capture("floating-dark")
         Assert.assertTrue(find(overlay(),"Pause")!!.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK))
         compose.waitUntil(5000){Repository.engine.phase=="paused"}
         val bounds=android.graphics.Rect();find(overlay(),"Start or resume")!!.getBoundsInScreen(bounds)
@@ -141,6 +141,33 @@ class ComposeMvpTest {
             compose.onNodeWithText("Block during focus").assertIsDisplayed()
         } else compose.onNodeWithText("App-blocking edition needed").assertIsDisplayed()
         capture("blocking")
+    }
+
+    @Test fun darkAppearancePersistsAndKeepsTimer() {
+        compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Dark").performClick()
+        compose.onNodeWithText("Dark").assertIsSelected()
+        compose.runOnIdle {Assert.assertTrue(Appearance.dark(compose.activity));Assert.assertEquals("dark",Appearance.mode())}
+        capture("dark-settings")
+        compose.activityRule.scenario.recreate()
+        compose.onNodeWithText("Dark").assertIsSelected()
+        compose.onNodeWithText("Focus").performClick()
+        compose.onNodeWithContentDescription("Start or resume").performClick()
+        compose.runOnIdle {Repository.engine.accumulated=38*60000L;Repository.engine.anchor=android.os.SystemClock.elapsedRealtime()}
+        compose.waitUntil(5000) {compose.onAllNodes(hasText("00:38",substring=true)).fetchSemanticsNodes().isNotEmpty()}
+        compose.waitForIdle()
+        capture("dark-focus")
+        val before=Repository.engine.elapsed()
+        compose.onNodeWithText("Settings").performClick()
+        compose.onNodeWithText("Light").performClick()
+        compose.runOnIdle {Assert.assertFalse(Appearance.dark(compose.activity));Assert.assertEquals("running",Repository.engine.phase);Assert.assertTrue(Repository.engine.elapsed()>=before)}
+        compose.onNodeWithText("Dark").performClick()
+        compose.onNodeWithText("Your Google profile").performClick()
+        capture("dark-profile")
+        compose.onNodeWithContentDescription("Close profile").performClick()
+        compose.onNodeWithText("Journal").performClick()
+        capture("dark-journal")
+        compose.runOnIdle {Repository.discard()}
     }
 
 }

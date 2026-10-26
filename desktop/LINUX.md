@@ -2,7 +2,7 @@
 
 The portable **AppImage** bundles Focanopy, Python, Qt, fonts, and XCB helper libraries. No Python installation or virtual environment is needed on the target machine.
 
-[Download ARM64 / aarch64](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-aarch64.AppImage) · [Download Intel/AMD x86-64](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-x86_64.AppImage) · [Releases and checksums](https://github.com/ashu-sa/cyber-cat/releases/latest)
+[Download ARM64 / aarch64](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-aarch64.AppImage) · [Download Intel/AMD x86-64](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-x86_64.AppImage) · [Releases and checksums](https://github.com/ashu-sa/focanopy/releases/latest)
 
 ## Requirements
 
@@ -68,7 +68,7 @@ The AppImage uses the same data and account identifiers as the older Linux archi
 
 ## Tar archive fallback
 
-The [ARM64 tar archive](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-aarch64.tar.gz) and [Intel/AMD tar archive](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux.tar.gz) are also built on their respective portable baselines. Extract the entire archive and launch its `Focanopy/Focanopy` executable. Keep the adjacent `_internal` folder. The AppImage is the recommended download because it also provides the display-backend launcher.
+The [ARM64 tar archive](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-aarch64.tar.gz) and [Intel/AMD tar archive](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux.tar.gz) are also built on their respective portable baselines. Extract the entire archive and launch its `Focanopy/Focanopy` executable. Keep the adjacent `_internal` folder. The AppImage is the recommended download because it also provides the display-backend launcher.
 
 ## Build and verify
 
@@ -87,6 +87,6 @@ dist/Focanopy-Linux-aarch64.tar.gz
 dist/SHA256SUMS-Linux-aarch64.txt
 ```
 
-[Portable build and Fedora runtime checks](https://github.com/ashu-sa/cyber-cat/actions/workflows/linux-portable.yml) run independently of the Android/macOS/Windows packages. The main build workflow also includes portable Linux packaging and Fedora runtime checks.
+[Portable build and Fedora runtime checks](https://github.com/ashu-sa/focanopy/actions/workflows/linux-portable.yml) run independently of the Android/macOS/Windows packages. The main build workflow also includes portable Linux packaging and Fedora runtime checks.
 
 Packaging references: [AppImage execution and extraction](https://docs.appimage.org/user-guide/run-appimages.html), [FUSE fallback](https://docs.appimage.org/user-guide/troubleshooting/fuse.html), and [Qt Linux requirements](https://doc.qt.io/qt-6/linux.html).

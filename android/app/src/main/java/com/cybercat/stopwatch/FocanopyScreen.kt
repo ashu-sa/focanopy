@@ -39,13 +39,12 @@ import org.json.JSONObject
 import java.time.*
 import java.time.format.DateTimeFormatter
 
-private val Ink=Color(0xFF203B2B)
-private val Moss=Color(0xFF476948)
-private val Paper=Color(0xFFF5F6EF)
-private val Sage=Color(0xFFE6EEDC)
-private val Muted=Color(0xFF6B7869)
-private val Coral=Color(0xFFAE6854)
-private val AppColors=lightColorScheme(primary=Moss,onPrimary=Color.White,secondary=Color(0xFF7B8562),background=Paper,surface=Color(0xFFFEFFF9),onSurface=Ink,onBackground=Ink,surfaceVariant=Sage,onSurfaceVariant=Muted,outline=Color(0xFFC1CCB9),secondaryContainer=Sage,primaryContainer=Sage,onPrimaryContainer=Ink,onSecondaryContainer=Ink,onTertiaryContainer=Ink,surfaceContainerHighest=Color(0xFFE4E9DF),surfaceContainer=Paper,error=Coral)
+private val Ink:Color @Composable get()=MaterialTheme.colorScheme.onSurface
+private val Moss:Color @Composable get()=MaterialTheme.colorScheme.primary
+private val Paper:Color @Composable get()=MaterialTheme.colorScheme.background
+private val Sage:Color @Composable get()=MaterialTheme.colorScheme.surfaceVariant
+private val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
+private val Coral:Color @Composable get()=MaterialTheme.colorScheme.error
 private fun duration(ms:Long):String {val m=(ms.coerceAtLeast(0)/60000);return if(m>=60)"${m/60}h ${m%60}m" else "${m}m"}
 private fun clock(ms:Long):String {val sec=ms.coerceAtLeast(0)/1000;return "%02d:%02d:%02d".format(java.util.Locale.ROOT,sec/3600,sec/60%60,sec%60)}
 private fun dateOf(record:JSONObject)=Instant.ofEpochMilli(record.getLong("start")).atZone(ZoneId.systemDefault()).toLocalDate()
@@ -60,7 +59,8 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
     val pageStates=rememberSaveableStateHolder()
     val error=Repository.error
     LaunchedEffect(error) { if(error!=null) {snackbar.showSnackbar(error);Repository.error=null} }
-    MaterialTheme(colorScheme=AppColors,typography=Typography()) {
+    val dark=Appearance.dark(Appearance.mode(),isSystemInDarkTheme())
+    MaterialTheme(colorScheme=if(dark)Appearance.night else Appearance.light,typography=Typography()) {
         BackHandler(enabled=tab!="Timer") {onTab("Timer")}
         Scaffold(containerColor=Paper,snackbarHost={SnackbarHost(snackbar)},topBar={
             Column(Modifier.statusBarsPadding().padding(horizontal=24.dp).padding(top=14.dp,bottom=10.dp)) {
@@ -132,7 +132,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             }}
         }
         item {
-            Surface(shape=RoundedCornerShape(20.dp),color=Color.White) {
+            Surface(shape=RoundedCornerShape(20.dp),color=MaterialTheme.colorScheme.surface) {
                 Row(Modifier.fillMaxWidth().padding(horizontal=18.dp,vertical=10.dp),verticalAlignment=Alignment.CenterVertically) {
                     Icon(Icons.Default.LocalFlorist,null,tint=Moss,modifier=Modifier.size(22.dp))
                     Column(Modifier.weight(1f).padding(start=12.dp)) {
@@ -144,7 +144,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             }
         }
         item {
-            val heroColor by animateColorAsState(if(phase=="paused" || stage=="dead")Color(0xFFEAE6DC) else Sage,tween(700),label="tree environment")
+            val heroColor by animateColorAsState(if(phase=="paused" || stage=="dead")MaterialTheme.colorScheme.surfaceContainerHighest else Sage,tween(700),label="tree environment")
             Surface(shape=RoundedCornerShape(32.dp),color=heroColor) {
                 Column(Modifier.fillMaxWidth().animateContentSize().padding(if(compact)20.dp else 24.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(if(compact)8.dp else 12.dp)) {
                     val badge=when {pomo && stage=="dead"->"A FRESH START AWAITS";pomo && stage=="break"->"REST & RESET";pomo && stage=="ready"->"READY WHEN YOU ARE";phase=="paused"->"WATERING PAUSED";running->"GROWING WITH YOU";phase=="finished"->"BEAUTIFULLY DONE";else->"YOUR LITTLE GROVE"}
@@ -163,7 +163,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
                         if(!pomo && phase!="finished") FilledTonalIconButton(onClick=onFinish,enabled=phase!="idle",modifier=Modifier.size(50.dp),shape=RoundedCornerShape(16.dp)) {Icon(Icons.Default.Done,"Finish session",Modifier.size(21.dp))}
                         if(pomo && phase!="idle" && stage!="dead") FilledTonalIconButton(onClick={onAction("cancel")},modifier=Modifier.size(50.dp),shape=RoundedCornerShape(16.dp)) {Icon(Icons.Default.Close,"Cancel round · tree will die",tint=Coral)}
                     }
-                    LinearProgressIndicator(progress={animatedProgress},modifier=Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),color=Moss,trackColor=Color.White.copy(alpha=.55f))
+                    LinearProgressIndicator(progress={animatedProgress},modifier=Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),color=Moss,trackColor=MaterialTheme.colorScheme.onSurface.copy(alpha=.12f))
                     Text(if(pomo) {when(stage){"break"->"${Repository.pomodoro.breakMinutes}-minute break · Next round starts with you";"ready"->"Your next flower is waiting";"dead"->"Start again to grow a new flower";else->"Focus time · ${clock(elapsed)}"}} else Forest.nextTreeText(Repository.growthElapsed()),fontSize=11.sp,color=Muted,textAlign=TextAlign.Center)
                     if(phase=="finished") Row {
                         TextButton(onClick={onAction("primary")}){Text("Resume")}
@@ -177,7 +177,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             MetricCard(if(pomo)"FLOWERS" else "TREES TODAY",if(pomo)(elapsed/Pomodoro.FOCUS).toString() else Forest.trees(sum(today)).toString(),Modifier.weight(1f))
         }}
         if(pomo && phase=="idle") item {
-            Surface(shape=RoundedCornerShape(22.dp),color=Color.White) { Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+            Surface(shape=RoundedCornerShape(22.dp),color=MaterialTheme.colorScheme.surface) { Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)) {
                 Text("Break length",fontSize=13.sp,modifier=Modifier.weight(1f))
                 listOf(5,10).forEach {minutes->FilterChip(selected=Repository.pomodoro.breakMinutes==minutes,onClick={Repository.selectMode(true,minutes);onAction("refresh")},label={Text("$minutes min")})}
             }}
@@ -189,7 +189,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
 }
 
 @Composable private fun MetricCard(label:String,value:String,modifier:Modifier=Modifier) {
-    Surface(modifier,shape=RoundedCornerShape(22.dp),color=Color.White) {Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+    Surface(modifier,shape=RoundedCornerShape(22.dp),color=MaterialTheme.colorScheme.surface) {Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
         Text(label,fontSize=9.sp,letterSpacing=1.sp,color=Muted,fontWeight=FontWeight.SemiBold)
         Text(value,fontSize=25.sp,fontWeight=FontWeight.Medium)
     }}
@@ -212,7 +212,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
     LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(20.dp,8.dp,20.dp,24.dp),verticalArrangement=Arrangement.spacedBy(14.dp)) {
         item {Row(horizontalArrangement=Arrangement.spacedBy(10.dp)) {listOf("Day","Week","Month").forEach {value->FilterChip(selected=scope==value,onClick={scope=value},label={Text(value)},modifier=Modifier.weight(1f))}}}
         item {
-            Surface(shape=RoundedCornerShape(26.dp),color=Color.White) {
+            Surface(shape=RoundedCornerShape(26.dp),color=MaterialTheme.colorScheme.surface) {
                 Column(Modifier.padding(16.dp)) {
                     Row(verticalAlignment=Alignment.CenterVertically) {
                         Text(ym.format(DateTimeFormatter.ofPattern("MMMM yyyy")),fontWeight=FontWeight.SemiBold,modifier=Modifier.weight(1f))
@@ -234,9 +234,9 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
                                 .background(if(chosen)Moss else if(ms>0)Sage.copy(alpha=.55f+intensity*.45f) else Color.Transparent)
                                 .then(if(d!=null)Modifier.clickable {selected=d.toString()} .semantics {contentDescription="$d, ${duration(ms)}, ${Forest.trees(ms)} trees"} else Modifier),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center) {
                                 if(d!=null) {
-                                    Text(number.toString(),fontSize=12.sp,fontWeight=if(d==LocalDate.now())FontWeight.Bold else FontWeight.Normal,color=if(chosen)Color.White else Ink)
-                                    if(ms>0) Text(duration(ms),fontSize=8.sp,maxLines=1,color=if(chosen)Color.White.copy(alpha=.85f) else Moss)
-                                    else if(d==LocalDate.now()) Box(Modifier.padding(top=4.dp).size(3.dp).background(if(chosen)Color.White else Moss,CircleShape))
+                                    Text(number.toString(),fontSize=12.sp,fontWeight=if(d==LocalDate.now())FontWeight.Bold else FontWeight.Normal,color=if(chosen)MaterialTheme.colorScheme.onPrimary else Ink)
+                                    if(ms>0) Text(duration(ms),fontSize=8.sp,maxLines=1,color=if(chosen)MaterialTheme.colorScheme.onPrimary.copy(alpha=.85f) else Moss)
+                                    else if(d==LocalDate.now()) Box(Modifier.padding(top=4.dp).size(3.dp).background(if(chosen)MaterialTheme.colorScheme.onPrimary else Moss,CircleShape))
                                 }
                             }
                         }
@@ -267,7 +267,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
         }
         items(records.sortedByDescending {it.getLong("start")},key={it.getString("id")}) {record->
             var menu by remember {mutableStateOf(false)}
-            Surface(shape=RoundedCornerShape(22.dp),color=Color.White,modifier=Modifier.animateItem()) {
+            Surface(shape=RoundedCornerShape(22.dp),color=MaterialTheme.colorScheme.surface,modifier=Modifier.animateItem()) {
                 Row(Modifier.padding(16.dp),verticalAlignment=Alignment.CenterVertically) {
                     Icon(Icons.Default.Spa,null,tint=Moss,modifier=Modifier.size(36.dp).background(Sage,RoundedCornerShape(12.dp)).padding(8.dp))
                     Column(Modifier.weight(1f).padding(horizontal=12.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {
@@ -295,7 +295,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
 }
 
 @Composable private fun ActionRow(title:String,subtitle:String,icon:ImageVector,onClick:()->Unit) {
-    Surface(onClick=onClick,shape=RoundedCornerShape(20.dp),color=Color.White) {
+    Surface(onClick=onClick,shape=RoundedCornerShape(20.dp),color=MaterialTheme.colorScheme.surface) {
         Row(Modifier.fillMaxWidth().padding(18.dp),verticalAlignment=Alignment.CenterVertically) {
             Icon(icon,null,tint=Moss,modifier=Modifier.size(22.dp))
             Column(Modifier.weight(1f).padding(horizontal=14.dp),verticalArrangement=Arrangement.spacedBy(4.dp)) {Text(title,fontSize=14.sp,fontWeight=FontWeight.Medium);Text(subtitle,fontSize=11.sp,color=Muted)}
@@ -310,8 +310,22 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
     val floating=Repository.prefs.getBoolean("showPet",false) && Settings.canDrawOverlays(context)
     LazyColumn(modifier.fillMaxSize(),contentPadding=PaddingValues(20.dp,8.dp,20.dp,24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         item {ActionRow(if(Cloud.owner==null)"Your Google profile" else Cloud.username,if(Cloud.owner==null)"One account for every grove" else Cloud.status,Icons.Default.AccountCircle,onProfile)}
+        item {Surface(shape=RoundedCornerShape(22.dp),color=MaterialTheme.colorScheme.surface) {
+            Column(Modifier.padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)) {
+                    Icon(Icons.Default.Contrast,null,tint=Moss)
+                    Text("Appearance",fontWeight=FontWeight.Medium,fontSize=14.sp)
+                }
+                Text("Choose a cozy light or dark grove, or follow your device.",fontSize=12.sp,color=Muted)
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                    listOf("system" to "System","light" to "Light","dark" to "Dark").forEach {(mode,label)->
+                        FilterChip(selected=Appearance.mode()==mode,onClick={Repository.prefs.edit().putString(Appearance.KEY,mode).apply();onAction("appearance")},label={Text(label)},modifier=Modifier.weight(1f).semantics {contentDescription="$label appearance"})
+                    }
+                }
+            }
+        }}
         item {Text("YOUR COMPANION",fontSize=10.sp,letterSpacing=1.5.sp,color=Muted,modifier=Modifier.padding(top=12.dp))}
-        item {Surface(shape=RoundedCornerShape(22.dp),color=Color.White) {Column(Modifier.padding(18.dp)) {
+        item {Surface(shape=RoundedCornerShape(22.dp),color=MaterialTheme.colorScheme.surface) {Column(Modifier.padding(18.dp)) {
             Row(verticalAlignment=Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {Text("Floating tree",fontWeight=FontWeight.Medium,fontSize=14.sp);Text("A tiny grove above other apps",fontSize=11.sp,color=Muted)}
                 Switch(checked=floating,onCheckedChange={onAction("overlay")})

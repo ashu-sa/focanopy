@@ -4,7 +4,7 @@
   <p><strong>Make room to grow.</strong></p>
   <p>An Android-first focus companion that turns focused time into a living grove.<br />Native apps for Android, macOS, Windows, and Linux. Offline by default.</p>
   <p>
-    <a href="https://github.com/ashu-sa/cyber-cat/releases/latest">Download</a> ·
+    <a href="https://github.com/ashu-sa/focanopy/releases/latest">Download</a> ·
     <a href="#see-it-in-action">Demo</a> ·
     <a href="#screenshots">Screenshots</a> ·
     <a href="#build-from-source">Build from source</a>
@@ -15,9 +15,9 @@
 
 ### Growing a little grove
 
-[![Watch the Focanopy tree lifecycle demo](docs/screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4)
+[![Watch the Focanopy tree lifecycle demo](docs/screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/focanopy/releases/download/v1.14.0/focanopy-demo.mp4)
 
-**[Watch the tree lifecycle demo · 27 seconds](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4)** · [Download MP4](docs/media/focanopy-demo.mp4)
+**[Watch the tree lifecycle demo · 27 seconds](https://github.com/ashu-sa/focanopy/releases/download/v1.14.0/focanopy-demo.mp4)** · [Download MP4](docs/media/focanopy-demo.mp4)
 
 A native-renderer preview of gradual growth, a completed flower, overlapping trees, and a cancelled round withering. Growth is accelerated; the 2.4-second tree handoff plays at real speed. Preview time never changes your timer or saved history.
 
@@ -40,11 +40,13 @@ A native-renderer preview of gradual growth, a completed flower, overlapping tre
 - **Your companion, nearby.** Android notification controls and optional floating tree; always-on-top desktop companions with draggable, compact controls.
 - **Local first, sync when you want.** Work without an account, export your history, or sign in to combine completed sessions across devices.
 
+**Appearance:** Android Settings → **Appearance** offers System, Light, and Dark. Your choice is remembered and applies to the floating companion too.
+
 ## Screenshots
 
 ### Android · the primary app
 
-The primary Android experience is built with **Jetpack Compose + Material 3**: warm cream surfaces, sage-green cards, animated focus transitions, a calendar journal, and a Google profile sheet. Tap the profile icon to choose a Google account in Android’s native account sheet, without opening a browser; the icon-only sync control combines sessions from devices using the same account.
+The primary Android experience is built with **Jetpack Compose + Material 3**: light cream or dark forest surfaces, sage-green cards, animated focus transitions, a calendar journal, and a Google profile sheet. Tap the profile icon to choose a Google account in Android’s native account sheet, without opening a browser; the icon-only sync control combines sessions from devices using the same account.
 
 <table>
   <tr>
@@ -74,6 +76,19 @@ The primary Android experience is built with **Jetpack Compose + Material 3**: w
 The focus page scrolls on shorter screens; navigation, profile, and sync remain available. Calendar selection and page scroll positions are retained when switching tabs. [Google profile sheet](docs/screenshots/android-compose-profile.png).
 
 </details>
+
+### A grove for late-night focus
+
+<table>
+  <tr><th>Dark focus</th><th>Saved appearance</th><th>Dark floating timer</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/android-compose-dark-focus.png" alt="Forest-green Android dark mode with light timer digits and sage controls" width="250" /></td>
+    <td><img src="docs/screenshots/android-compose-dark-settings.png" alt="Saved System, Light, and Dark appearance options" width="250" /></td>
+    <td><img src="docs/screenshots/android-compose-floating-dark.png" alt="Dark floating timer card above the Android app" width="250" /></td>
+  </tr>
+</table>
+
+Appearance changes keep your current timer running. **System** follows the device theme; **Light** and **Dark** stay selected across restarts.
 
 ### A companion above your apps
 
@@ -106,19 +121,19 @@ Keep a small floating tree on your desktop, then open the journal when you want 
   </tr>
 </table>
 
-Screenshots come from the native apps using sample sessions, not personal activity records. Android captures show the 1.14 interface on an isolated Android 15 emulator. Desktop captures show the existing native desktop builds; the Linux images were captured on Ubuntu, not Fedora. Select a desktop journal image to inspect it at full size.
+Screenshots come from the native apps using sample sessions, not personal activity records. Android light-mode captures show the 1.14 interface; dark-mode captures show 1.15 on an isolated Android 15 emulator. Desktop captures show the existing native desktop builds; the Linux images were captured on Ubuntu, not Fedora. Select a desktop journal image to inspect it at full size.
 
 ## Download & get started
 
 | Platform | Package | Requirements |
 |---|---|---|
-| **Android** | [Download standard APK](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Android-standard.apk) | Android 8.0+ |
-| **macOS** | [Universal app](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-macOS-universal.zip) | macOS 14+ · Apple Silicon or Intel |
-| **Windows** | [Portable ZIP](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Windows.zip) | Windows x64 · extract the folder, then run `Focanopy.exe` |
-| **Linux ARM64 · Fedora / Ubuntu** | [ARM64 AppImage](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-aarch64.AppImage) | aarch64 · glibc 2.39+ · [Fedora GNOME guide](desktop/LINUX.md) |
-| **Linux Intel/AMD · Fedora / Ubuntu** | [x86-64 AppImage](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-x86_64.AppImage) | x86-64 · glibc 2.35+ · [Linux guide](desktop/LINUX.md) |
+| **Android** | [Download standard APK](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Android-standard.apk) | Android 8.0+ |
+| **macOS** | [Universal app](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-macOS-universal.zip) | macOS 14+ · Apple Silicon or Intel |
+| **Windows** | [Portable ZIP](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Windows.zip) | Windows x64 · extract the folder, then run `Focanopy.exe` |
+| **Linux ARM64 · Fedora / Ubuntu** | [ARM64 AppImage](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-aarch64.AppImage) | aarch64 · glibc 2.39+ · [Fedora GNOME guide](desktop/LINUX.md) |
+| **Linux Intel/AMD · Fedora / Ubuntu** | [x86-64 AppImage](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-x86_64.AppImage) | x86-64 · glibc 2.35+ · [Linux guide](desktop/LINUX.md) |
 
-[Release notes & checksums](https://github.com/ashu-sa/cyber-cat/releases/latest) · [Build checks](https://github.com/ashu-sa/cyber-cat/actions/workflows/build.yml)
+[Release notes & checksums](https://github.com/ashu-sa/focanopy/releases/latest) · [Build checks](https://github.com/ashu-sa/focanopy/actions/workflows/build.yml)
 
 1. Open Focanopy and start the timer. On Android, allow notifications to use background controls.
 2. Pause whenever you need a break. Resume to keep growing the same tree.
@@ -129,7 +144,7 @@ Android packages are debug-signed personal/testing builds, not Play Store releas
 
 ### Fedora GNOME · ARM64 quick start
 
-**[Download the ARM64 AppImage](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-aarch64.AppImage)** for a Fedora machine where `uname -m` prints `aarch64`. Python and Qt are bundled; no host Python installation is required.
+**[Download the ARM64 AppImage](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-aarch64.AppImage)** for a Fedora machine where `uname -m` prints `aarch64`. Python and Qt are bundled; no host Python installation is required.
 
 From the download folder:
 
@@ -144,7 +159,7 @@ If FUSE is unavailable, launch without it:
 ./Focanopy-Linux-aarch64.AppImage --appimage-extract-and-run
 ```
 
-For Intel/AMD machines (`uname -m` → `x86_64`), use the [x86-64 AppImage](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Linux-x86_64.AppImage) instead. Each CPU architecture has its own portable build.
+For Intel/AMD machines (`uname -m` → `x86_64`), use the [x86-64 AppImage](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Linux-x86_64.AppImage) instead. Each CPU architecture has its own portable build.
 
 Both builds passed packaged X11 and native Wayland runtime checks on Fedora 43 and 44, plus Ubuntu launch checks. These are runtime checks, not full GNOME desktop certification. ARM64 requires glibc 2.39+; x86-64 requires glibc 2.35+. See the [Fedora GNOME guide](desktop/LINUX.md) for shortcuts, floating-window behaviour, and tar archive alternatives.
 
@@ -166,7 +181,7 @@ Rewards are derived from session durations. Short sessions add up, and edits or 
 
 ## Optional focus tools & sync
 
-**Android package choice:** the standard APK omits the Accessibility service, app-blocking implementation, and installed-app inventory queries. Timing, Pomodoro, trees, history, sync, notification controls, and the optional floating tree remain available. The separate [app-blocking APK](https://github.com/ashu-sa/cyber-cat/releases/latest/download/Focanopy-Android-app-blocking.apk) declares sensitive Accessibility access and may be blocked by Play Protect when sideloaded. Do not disable Play Protect to install it. The app-blocking screenshots show this optional build.
+**Android package choice:** the standard APK omits the Accessibility service, app-blocking implementation, and installed-app inventory queries. Timing, Pomodoro, trees, history, sync, notification controls, and the optional floating tree remain available. The separate [app-blocking APK](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Android-app-blocking.apk) declares sensitive Accessibility access and may be blocked by Play Protect when sideloaded. Do not disable Play Protect to install it. The app-blocking screenshots show this optional build.
 
 **App blocking (optional Android build / desktop):** select social apps, choose individual apps, or block all apps except browsers and your exclusions. Android also offers a five-minute pause for blocks. Blocking works with the ordinary timer and Flower Focus, and releases during pauses and breaks. Android requires explicit Accessibility access; desktop behaviour depends on the OS. See [Pomodoro & app blocking](POMODORO.md) for setup and platform limits.
 
@@ -223,7 +238,7 @@ For a universal macOS package, run the build with `CYBERCAT_UNIVERSAL=1`.
 
 - Android Force stop, reboot, or OEM battery management can stop the foreground service. Reopen the app to restore its checkpoint. Physical-device OEM restrictions and Play Store review have not been validated.
 - PIN accounts have no email recovery. Local-only mode remains available.
-- Focanopy was previously named **Cyber Cat**. The repository URL and internal package/storage identifiers stay stable to preserve upgrades, accounts, and history.
+- Focanopy was previously named **Cyber Cat**. The repository is now **ashu-sa/focanopy**. Internal package/storage identifiers stay stable to preserve upgrades, accounts, and history.
 
 </details>
 

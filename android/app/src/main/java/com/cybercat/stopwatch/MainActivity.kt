@@ -52,7 +52,7 @@ class MainActivity: androidx.activity.ComponentActivity() {
         syncTicks++; if(syncTicks%30==0 && Cloud.owner!=null) Cloud.run({ Cloud.sync() })
         handler.postDelayed(this,1000)
     } }
-    override fun onCreate(state:Bundle?) { super.onCreate(state); Repository.init(this); if(!BuildConfig.APP_BLOCKING_AVAILABLE)Repository.prefs.edit().putBoolean("focusBlocking",false).apply(); if(state!=null) { tab=state.getString("tab","Timer"); composeSaveOpen=state.getBoolean("saveOpen"); requestOverlay=state.getBoolean("requestOverlay") }; enableEdgeToEdge(statusBarStyle=SystemBarStyle.light(Color.rgb(245,246,239),Color.rgb(245,246,239)),navigationBarStyle=SystemBarStyle.light(Color.rgb(245,246,239),Color.rgb(245,246,239))); render(); handle(intent); if(Repository.engine.phase!="idle" || Repository.prefs.getBoolean("showPet",false)) safe { service("SYNC") } }
+    override fun onCreate(state:Bundle?) { super.onCreate(state); Repository.init(this); if(!BuildConfig.APP_BLOCKING_AVAILABLE)Repository.prefs.edit().putBoolean("focusBlocking",false).apply(); if(state!=null) { tab=state.getString("tab","Timer"); composeSaveOpen=state.getBoolean("saveOpen"); requestOverlay=state.getBoolean("requestOverlay") }; updateAppearance(); render(); handle(intent); if(Repository.engine.phase!="idle" || Repository.prefs.getBoolean("showPet",false)) safe { service("SYNC") } }
     override fun onNewIntent(intent:Intent) { super.onNewIntent(intent); setIntent(intent); handle(intent) }
     private fun handle(intent:Intent?) {
         val callback=intent?.dataString
@@ -100,7 +100,14 @@ class MainActivity: androidx.activity.ComponentActivity() {
         background=android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(Color.argb(40,173,218,173)),card(),null)
         setOnClickListener {safe(action)}
     }
+    private fun updateAppearance() {
+        val dark=Appearance.dark(this)
+        val background=if(dark)Color.rgb(17,27,23) else Color.rgb(245,246,239)
+        val bars=if(dark)SystemBarStyle.dark(background) else SystemBarStyle.light(background,background)
+        enableEdgeToEdge(statusBarStyle=bars,navigationBarStyle=bars)
+    }
     private fun render() {
+        updateAppearance()
         phase=Repository.engine.phase; pomoStage=Repository.pomodoro.stage
         if(!shellReady) {
             shellReady=true
@@ -115,6 +122,7 @@ class MainActivity: androidx.activity.ComponentActivity() {
             "primary" -> { notifications(); if(Repository.engine.phase=="running") Repository.pause() else if(Repository.engine.phase=="finished") Repository.resumeFinished() else Repository.start(); service("SYNC") }
             "finish" -> { Repository.finish(); service("SYNC") }
             "saved" -> service("SYNC")
+            "appearance" -> {updateAppearance();service("SYNC")}
             "cancel" -> cancelPomodoroDialog()
             "reset" -> { Repository.discard(); service("SYNC") }
             "google" -> beginGoogleSignIn()
@@ -125,7 +133,7 @@ class MainActivity: androidx.activity.ComponentActivity() {
             "keepCloud" -> Cloud.run({Cloud.resolve(false);Cloud.sync()})
             "apps" -> focusApps()
             "accessibility" -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-            "blockingDownload" -> startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://github.com/ashu-sa/cyber-cat/releases/latest")))
+            "blockingDownload" -> startActivity(Intent(Intent.ACTION_VIEW,Uri.parse("https://github.com/ashu-sa/focanopy/releases/latest")))
             "preview" -> treePreviewDialog()
             "export" -> exportHistory()
             "notifications" -> startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,packageName))

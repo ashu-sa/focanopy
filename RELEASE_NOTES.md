@@ -1,13 +1,12 @@
-# Focanopy 1.14.0 — Native Android sign-in and focus protection
+# Focanopy 1.15.0 — A darker, cozier grove
 
-- Google sign-in now uses Android’s native Credential Manager account sheet. No browser or browser fallback. Login remains encrypted and remembered; sync uses the same cross-device account. Requires Google Play services.
-- A Compose focus-protection sheet adds social-app selection, app icons and switches, search, all-except-browser mode and exclusions. Works with the ordinary timer and Flower Focus.
-- Pause app blocks for five minutes or resume them early. Pausing timing and Pomodoro breaks release blocked apps. The optional Accessibility service returns selected apps to Home; it does not suspend packages.
-- Redesigned floating timer: compact cream card, moss-green controls, readable digits, phase label, animated tree and drag support across controls without accidental activation.
-- README refreshed with current Android screenshots and setup details.
+- Android Settings now offers **System**, **Light**, and **Dark** appearance choices, remembered across app restarts.
+- Dark mode uses forest surfaces, soft sage accents and readable light text across focus, journal, profile, session dialogs and app-blocking settings.
+- The floating timer and Android system bars follow the same choice. Switching themes keeps the current timer and history intact; System responds to device theme changes.
+- The GitHub repository is now **ashu-sa/focanopy**. Documentation and app download links use the new address. App IDs, signing identity, local storage and account configuration remain compatible with existing installs.
 
-Recommended: **Focanopy-Android-standard.apk**. App blocking requires **Focanopy-Android-app-blocking.apk**, explicit Accessibility access and may be restricted by Play Protect. Keep Play Protect enabled. Both editions preserve the package and signing identity for upgrades; **Focanopy-Android-debug.apk** aliases standard.
+Recommended: **Focanopy-Android-standard.apk**. Choose **Focanopy-Android-app-blocking.apk** for optional distraction blocking with explicitly granted Accessibility access. Keep Play Protect enabled. **Focanopy-Android-debug.apk** aliases the standard APK.
 
-Validation: both Android variants build, with 20 JVM tests each and lint. Isolated Android 15 UI checks cover timer/session flows, journal, profile, background timing, floating controls and focus-protection settings. Seven app-blocking edition device tests also verify selected-app enforcement, five-minute snooze, resumption and release on timer pause. Real Google consent and cross-device login require verification on a Google-enabled device; no personal Google account was used in automated tests.
+Validation: both variants build, pass lint and 22 JVM tests each. Android 15 QA checks cover saved dark-mode selection, Activity recreation, changing themes during a running timer, floating controls, session editing, journal, profile and Pomodoro. Real Google consent still requires user verification on a Google-enabled device.
 
-Desktop packages are carried forward unchanged from v1.13.0.
+Desktop packages are carried forward unchanged from v1.14.0.
