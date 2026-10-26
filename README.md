@@ -13,13 +13,23 @@
 
 ## See it in action
 
-Start small. Watch a tree grow, settle into an overlapping grove, and make space for the next seedling.
+### Growing a little grove
 
-[![Focanopy demo: seed growth, a completed flower, smooth grove handoff, and a cancelled tree withering](docs/screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/cyber-cat/releases/download/v1.12.0/focanopy-demo.mp4)
+[![Watch the Focanopy tree lifecycle demo](docs/screenshots/tree-lifecycle.gif)](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4)
 
-**[Watch or download the video — MP4, 27 seconds](https://github.com/ashu-sa/cyber-cat/releases/download/v1.12.0/focanopy-demo.mp4)** · [Video source](docs/media/focanopy-demo.mp4)
+**[Watch the tree lifecycle demo · 27 seconds](https://github.com/ashu-sa/cyber-cat/releases/download/v1.14.0/focanopy-demo.mp4)** · [Download MP4](docs/media/focanopy-demo.mp4)
 
-The preview uses the app’s native desktop tree renderer. Growth is accelerated; the 2.4-second handoff plays at real speed. Preview time never changes your timer or saved history.
+A native-renderer preview of gradual growth, a completed flower, overlapping trees, and a cancelled round withering. Growth is accelerated; the 2.4-second tree handoff plays at real speed. Preview time never changes your timer or saved history.
+
+### Explore the apps
+
+| Demo | What to try | Preview |
+|---|---|---|
+| **Android focus flow** | Start → pause → resume → finish → name a session → open the journal | [Focus & journal walkthrough](docs/DEMOS.md#android-focus-to-journal) |
+| **Floating companion** | Show the tree, drag from the card or buttons, pause, and resume | [Floating timer](docs/DEMOS.md#android-floating-companion) |
+| **Distraction blocking** | Select social apps, choose exceptions, and pause blocks for five minutes | [Focus protection](docs/DEMOS.md#android-focus-protection) |
+| **Desktop apps** | Keep the tree above your work and review the calendar | [macOS, Windows & Linux](docs/DEMOS.md#native-desktop-apps) |
+| **Tree lifecycle simulator** | Preview growth, completion, the next tree, and withering | [Try the built-in demo](docs/DEMOS.md#tree-lifecycle-simulator) |
 
 ## Focus, without the clutter
 
@@ -50,7 +60,7 @@ The primary Android experience is built with **Jetpack Compose + Material 3**: w
 </table>
 
 <details>
-<summary><strong>More Android screens · settings, app blocking, and session saving</strong></summary>
+<summary><strong>More Android screens · settings, app blocking, and the idle timer</strong></summary>
 
 <table>
   <tr><th>Make it yours</th><th>Apps & permissions</th><th>Ready to focus</th></tr>
@@ -65,7 +75,18 @@ The focus page scrolls on shorter screens; navigation, profile, and sync remain 
 
 </details>
 
-<p align="center"><img src="docs/screenshots/android-compose-floating.png" alt="Compact floating timer with growing tree and square icon controls" width="280" /></p>
+### A companion above your apps
+
+<table>
+  <tr><th>Floating timer</th><th>Choose what stays outside your focus</th></tr>
+  <tr>
+    <td align="center"><a href="docs/screenshots/android-compose-floating.png"><img src="docs/screenshots/android-compose-floating.png" alt="Android floating card with a growing tree, elapsed time, pause, finish, and hide controls" width="300" /></a></td>
+    <td align="center"><a href="docs/screenshots/android-compose-blocking.png"><img src="docs/screenshots/android-compose-blocking.png" alt="Compose app-blocking sheet with social-app selection, browser exceptions, five-minute pause, and individual app toggles" width="300" /></a></td>
+  </tr>
+</table>
+
+Drag from anywhere on the floating card; a drag does not activate its controls. App blocking is available in the optional **app-blocking APK** and requires Android Accessibility access.
+
 
 ### Native desktop companions
 
@@ -85,7 +106,7 @@ Keep a small floating tree on your desktop, then open the journal when you want 
   </tr>
 </table>
 
-Screenshots come from the native apps using sample sessions, not personal activity records. Android captures use an isolated Android 15 emulator. Select a desktop journal image to inspect it at full size.
+Screenshots come from the native apps using sample sessions, not personal activity records. Android captures show the 1.14 interface on an isolated Android 15 emulator. Desktop captures show the existing native desktop builds; the Linux images were captured on Ubuntu, not Fedora. Select a desktop journal image to inspect it at full size.
 
 ## Download & get started
 
@@ -149,7 +170,7 @@ Rewards are derived from session durations. Short sessions add up, and edits or 
 
 **App blocking (optional Android build / desktop):** select social apps, choose individual apps, or block all apps except browsers and your exclusions. Android also offers a five-minute pause for blocks. Blocking works with the ordinary timer and Flower Focus, and releases during pauses and breaks. Android requires explicit Accessibility access; desktop behaviour depends on the OS. See [Pomodoro & app blocking](POMODORO.md) for setup and platform limits.
 
-**Cross-device history:** sign in once with the same username and four-digit PIN on each device. Completed sessions sync with their source-device labels; active timers stay on their own devices. Offline edits are retained, and conflicting edits have explicit resolution choices. Existing local history uploads only when you choose to include it. See [accounts & sync](backend/README.md).
+**Cross-device history:** connect the same Google account on each device. Legacy username/PIN accounts remain available in desktop clients and stay separate from Google accounts. Completed sessions sync with their source-device labels; active timers stay on their own devices. Offline edits are retained, and conflicting edits have explicit resolution choices. Existing local history uploads only when you choose to include it. See [accounts & sync](backend/README.md).
 
 **Google sign-in:** Android uses Credential Manager’s native Google account sheet with a nonce-protected ID-token exchange. Desktop apps use Google OAuth with PKCE. Tap the profile icon to connect; login is remembered on your device. Existing username/PIN accounts remain separate. See [setup and verification](backend/GOOGLE_SIGN_IN.md).
 
