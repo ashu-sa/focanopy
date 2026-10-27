@@ -182,7 +182,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
                 listOf(5,10).forEach {minutes->FilterChip(selected=Repository.pomodoro.breakMinutes==minutes,onClick={Repository.selectMode(true,minutes);onAction("refresh")},label={Text("$minutes min")})}
             }}
         }
-        item {ActionRow("Protect your focus","Choose apps to keep out of your grove",Icons.Default.Shield){onAction("apps")}}
+        item {ActionRow("Protect your focus","Pause social distractions while you focus",Icons.Default.Shield){onAction("apps")}}
         item {TextButton(onClick={onAction("preview")},modifier=Modifier.fillMaxWidth()){Icon(Icons.Default.FastForward,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("Watch your grove grow")}}
         Repository.error?.let {error->item {Text(error,color=Coral,fontSize=12.sp)}}
     }
@@ -339,7 +339,7 @@ fun FocanopyScreen(revision:Int,tab:String,onTab:(String)->Unit,profileOpen:Bool
             }
         }}}
         item {Text("FOCUS & ACCESS",fontSize=10.sp,letterSpacing=1.5.sp,color=Muted,modifier=Modifier.padding(top=12.dp))}
-        item {ActionRow("Pause distracting apps","Social apps, chosen apps, and focus protection",Icons.Default.Shield){onAction("apps")}}
+        item {ActionRow("Pause social apps","Choose social distractions to pause during focus",Icons.Default.Shield){onAction("apps")}}
         item {ActionRow("Notifications","Focus controls when the app is in the background",Icons.Default.NotificationsNone){onAction("notifications")}}
         item {ActionRow("Tree growth preview","See a whole little lifecycle in seconds",Icons.Default.FastForward){onAction("preview")}}
         item {ActionRow("Export your journal","Keep a local JSON copy of your sessions",Icons.Default.FileDownload){onAction("export")}}

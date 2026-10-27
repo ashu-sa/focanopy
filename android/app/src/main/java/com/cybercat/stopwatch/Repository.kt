@@ -32,6 +32,9 @@ object Repository {
     fun init(c: Context) {
         if (initialized) return
         context = c.applicationContext; initialized = true
+        // Retire broad app-blocking preferences on upgrade. Runtime checks also enforce this allowlist.
+        prefs.edit().putStringSet("blockedApps",SocialApps.selection(prefs.getStringSet("blockedApps",emptySet()).orEmpty()))
+            .putBoolean("focusBlockAll",false).remove("excludedApps").apply()
         try {
             if (file.baseFile.exists() || File(context.filesDir, "sessions.json.bak").exists()) {
                 val array = JSONArray(file.openRead().bufferedReader().use { it.readText() })

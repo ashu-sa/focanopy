@@ -135,10 +135,13 @@ class ComposeMvpTest {
 
     @Test fun appBlockingControlsAreAvailableOutsidePomodoro() {
         compose.onNodeWithText("Settings").performClick()
-        compose.onNodeWithText("Pause distracting apps").performScrollTo().performClick()
+        compose.onNodeWithText("Pause social apps").performScrollTo().performClick()
         if(BuildConfig.APP_BLOCKING_AVAILABLE) {
             compose.onNodeWithText("Select social apps").assertIsDisplayed()
             compose.onNodeWithText("Block during focus").assertIsDisplayed()
+            compose.onNodeWithText("All apps except browsers").assertDoesNotExist()
+            compose.onNodeWithContentDescription("Block Phone").assertDoesNotExist()
+            compose.onNodeWithContentDescription("Block Chrome").assertDoesNotExist()
         } else compose.onNodeWithText("App-blocking edition needed").assertIsDisplayed()
         capture("blocking")
     }

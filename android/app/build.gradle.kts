@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id(
 android {
     namespace = "com.cybercat.stopwatch"
     compileSdk = 35
-    defaultConfig { applicationId = "com.cybercat.stopwatch"; minSdk = 26; targetSdk = 35; versionCode = 19; versionName = "1.15.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
+    defaultConfig { applicationId = "com.cybercat.stopwatch"; minSdk = 26; targetSdk = 35; versionCode = 20; versionName = "1.16.0"; testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner" }
     buildFeatures { buildConfig = true; compose = true }
     buildTypes {
         getByName("debug") { buildConfigField("boolean", "APP_BLOCKING_AVAILABLE", "true") }

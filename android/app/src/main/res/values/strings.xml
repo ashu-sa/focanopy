@@ -1,3 +1,3 @@
 <resources>
     <string name="app_name">Focanopy</string>
-<string name="focus_accessibility_description">Optional app blocking while the stopwatch runs. Block selected apps or all apps except browsers, system essentials and your exclusions. Detects app openings without reading screen contents or typing. Pauses and Pomodoro breaks allow apps. Disable blocking in Focanopy or disable this service at any time.</string></resources>
+<string name="focus_accessibility_description">Optional social-app blocking during focus. Only supported social and video apps you select can be returned to Home. Phone, messaging, browsers and system apps are never blocked. Detects app openings without reading screen contents, typing or notification content. Pauses and Pomodoro breaks allow apps. You can disable blocking or this service at any time.</string></resources>

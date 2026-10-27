@@ -39,9 +39,9 @@ The Finish action is unavailable during a Pomodoro focus round. Some system or s
 
 Use the **app-blocking APK** for this demo. The standard APK intentionally excludes the Accessibility blocker and installed-app inventory.
 
-1. Open **Settings → Pause distracting apps**.
+1. Open **Settings → Pause social apps**.
 2. Turn on **Block during focus**, then grant Accessibility access yourself in Android Settings.
-3. Use **Select social apps**, individual app switches, or **All apps except browsers** with exclusions.
+3. Use **Select social apps** or individual switches for the supported social/video apps. Phone, messaging, browsers and system tools are never selectable.
 4. Start an ordinary focus timer or Flower Focus. Opening a selected app returns to Home.
 5. Choose **Pause for 5 min** to temporarily allow apps without stopping your timer, or **Resume blocks** to restore protection early.
 6. Pause the focus timer or enter a Pomodoro break: apps are allowed again.

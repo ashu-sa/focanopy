@@ -71,7 +71,7 @@ Output: `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Verification
 
-Both standard and app-blocking builds pass lint and 22 JVM tests each. Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
+Both standard and app-blocking builds pass lint and 24 JVM tests each. Compose UI tests on the isolated Android 15 QA emulator cover timer controls, save/rename, calendar/profile/settings, Pomodoro automatic completion, background timing and the standard APK’s exclusion of the Accessibility blocker. See **Compose device tests** below for the current commands. Screenshots use sample sessions, never personal activity.
 
 Physical-phone notification/overlay behavior, manufacturer battery policies, deep-sleep/reboot recovery, and real Google consent across devices still require device testing. Earlier View-based instrumentation files are historical and do not validate the new Compose screens.
 
@@ -126,7 +126,7 @@ These tests use Compose semantics to exercise actual start/pause/resume/save/ren
 
 ## Focus protection (optional app-blocking edition)
 
-Open **Settings → Pause distracting apps**. Enable **Block during focus**, then grant Accessibility access in Android Settings yourself. Use **Select social apps**, individual app switches, or **All apps except browsers** with per-app exclusions. Calls, Home, keyboards and essential system screens remain available.
+Open **Settings → Pause social apps**. Enable **Block during focus**, then grant Accessibility access in Android Settings yourself. Use **Select social apps** or individual switches for supported social/video apps. The app cannot block phone, messaging, browsers, Home, keyboards or system tools. The former all-apps mode is removed; legacy selections are filtered on upgrade.
 
 Blocking works during ordinary timing and Flower Focus. Opening a selected app returns to Home; Android does not suspend or uninstall that app. Pausing the timer, taking a Pomodoro break or disabling blocking releases it. **Pause for 5 min** temporarily allows apps without stopping the timer; **Resume blocks** restores protection early. Blocking resumes when that pause expires, including when a selected app is still open. Force stop, disabled Accessibility or device restrictions can stop enforcement.
 
@@ -140,4 +140,10 @@ The optional blocker enforcement check runs separately from Compose’s Activity
 adb -s emulator-5556 shell am instrument -w -e class com.cybercat.stopwatch.ComposeMvpTest,com.cybercat.stopwatch.FocusBlockingDeviceTest com.cybercat.stopwatch.qa.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-The seven-test app-blocking run covers returning a selected app to Home, temporarily releasing it, restoring protection and allowing it while timing is paused. Only the isolated `.qa` package is used; no real Google credentials or personal sessions are exercised.
+The app-blocking device checks cover returning a selected social/video app to Home, temporarily releasing it, restoring protection, allowing it while timing is paused, and ensuring legacy browser/system selections cannot be blocked. Only the isolated `.qa` package is used; no real Google credentials or personal sessions are exercised.
+
+### Social-only does not remove the Play Protect restriction
+
+The allowlist includes Instagram, Facebook, Threads, X, Reddit, Snapchat, TikTok, Pinterest, YouTube and LinkedIn (including listed Lite/regional variants). Calls, SMS/messaging, browsers and unrelated apps are not blockable. WhatsApp, Telegram, Messenger and Discord are not in the list. The optional build only queries known social-package metadata, rather than enumerating every installed launcher app. It receives foreground window-package events to enforce the selection and snooze expiry; it does not retrieve screen contents, typing or notification content.
+
+This is a behavior restriction, **not Google approval**. Internet-sideloaded APKs declaring Accessibility can still be blocked for sensitive access. Keep Play Protect enabled. The standard APK excludes the Accessibility service and has no social-package inventory queries; it retains the timer, journal, sign-in, sync and optional overlay, but cannot block other apps. If a warning persists, its exact text and package build should be checked against [Google’s developer guidance](https://developers.google.com/android/play-protect/warning-dev-guidance). Google offers an appeal process for classifications believed to be erroneous; approval is not guaranteed.

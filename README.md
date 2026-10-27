@@ -27,7 +27,7 @@ A native-renderer preview of gradual growth, a completed flower, overlapping tre
 |---|---|---|
 | **Android focus flow** | Start → pause → resume → finish → name a session → open the journal | [Focus & journal walkthrough](docs/DEMOS.md#android-focus-to-journal) |
 | **Floating companion** | Show the tree, drag from the card or buttons, pause, and resume | [Floating timer](docs/DEMOS.md#android-floating-companion) |
-| **Distraction blocking** | Select social apps, choose exceptions, and pause blocks for five minutes | [Focus protection](docs/DEMOS.md#android-focus-protection) |
+| **Distraction blocking** | Select supported social/video apps and pause blocks for five minutes | [Focus protection](docs/DEMOS.md#android-focus-protection) |
 | **Desktop apps** | Keep the tree above your work and review the calendar | [macOS, Windows & Linux](docs/DEMOS.md#native-desktop-apps) |
 | **Tree lifecycle simulator** | Preview growth, completion, the next tree, and withering | [Try the built-in demo](docs/DEMOS.md#tree-lifecycle-simulator) |
 
@@ -68,7 +68,7 @@ The primary Android experience is built with **Jetpack Compose + Material 3**: l
   <tr><th>Make it yours</th><th>Apps & permissions</th><th>Ready to focus</th></tr>
   <tr>
     <td><img src="docs/screenshots/android-compose-settings.png" alt="Grouped Android settings for the account, floating tree, appearance, and permissions" width="250" /></td>
-    <td><img src="docs/screenshots/android-compose-blocking.png" alt="App-blocking switches with app icons, browser exceptions, and permission status" width="250" /></td>
+    <td><img src="docs/screenshots/android-compose-blocking.png" alt="Social-app switches with app icons and permission status" width="250" /></td>
     <td><img src="docs/screenshots/android-compose-focus.png" alt="Android Compose idle focus screen with square start and finish controls" width="250" /></td>
   </tr>
 </table>
@@ -96,7 +96,7 @@ Appearance changes keep your current timer running. **System** follows the devic
   <tr><th>Floating timer</th><th>Choose what stays outside your focus</th></tr>
   <tr>
     <td align="center"><a href="docs/screenshots/android-compose-floating.png"><img src="docs/screenshots/android-compose-floating.png" alt="Android floating card with a growing tree, elapsed time, pause, finish, and hide controls" width="300" /></a></td>
-    <td align="center"><a href="docs/screenshots/android-compose-blocking.png"><img src="docs/screenshots/android-compose-blocking.png" alt="Compose app-blocking sheet with social-app selection, browser exceptions, five-minute pause, and individual app toggles" width="300" /></a></td>
+    <td align="center"><a href="docs/screenshots/android-compose-blocking.png"><img src="docs/screenshots/android-compose-blocking.png" alt="Compose app-blocking sheet with social-app selection, five-minute pause, and individual app toggles" width="300" /></a></td>
   </tr>
 </table>
 
@@ -183,7 +183,7 @@ Rewards are derived from session durations. Short sessions add up, and edits or 
 
 **Android package choice:** the standard APK omits the Accessibility service, app-blocking implementation, and installed-app inventory queries. Timing, Pomodoro, trees, history, sync, notification controls, and the optional floating tree remain available. The separate [app-blocking APK](https://github.com/ashu-sa/focanopy/releases/latest/download/Focanopy-Android-app-blocking.apk) declares sensitive Accessibility access and may be blocked by Play Protect when sideloaded. Do not disable Play Protect to install it. The app-blocking screenshots show this optional build.
 
-**App blocking (optional Android build / desktop):** select social apps, choose individual apps, or block all apps except browsers and your exclusions. Android also offers a five-minute pause for blocks. Blocking works with the ordinary timer and Flower Focus, and releases during pauses and breaks. Android requires explicit Accessibility access; desktop behaviour depends on the OS. See [Pomodoro & app blocking](POMODORO.md) for setup and platform limits.
+**App blocking:** Android’s optional build can block **only selected supported social/video apps**. Phone, messaging, browsers, keyboards and system tools cannot be selected, including through old saved settings. A five-minute snooze is available. Desktop builds retain their separate selected/all-except-browser options. Blocking releases during timer pauses and breaks. Android still needs Accessibility, so social-only behavior does **not** remove the Play Protect sideloading restriction. See [Pomodoro & app blocking](POMODORO.md).
 
 **Cross-device history:** connect the same Google account on each device. Legacy username/PIN accounts remain available in desktop clients and stay separate from Google accounts. Completed sessions sync with their source-device labels; active timers stay on their own devices. Offline edits are retained, and conflicting edits have explicit resolution choices. Existing local history uploads only when you choose to include it. See [accounts & sync](backend/README.md).
 
